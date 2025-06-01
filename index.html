@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experimento de Música e Inhibición</title>
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT"
+      crossorigin="anonymous"
+    />
+
+    <link href="dist/jspsych.css" rel="stylesheet" />
+    <link href="css/mystiles.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="container" class="container mt-5">
+      <div id="consent-section" class="card shadow p-4">
+        <h2>Consentimiento Informado</h2>
+        <hr />
+        <p>
+          Has sido invitado a participar en una investigación que permitirá
+          examinar cómo la música influye en el control inhibitorio (la
+          habilidad para suprimir la respuesta dominante o automática). Este
+          estudio es parte de un proyecto académico. Si estás de acuerdo,
+          realizarás pruebas cognitivas (Stroop, Go-No-Go, Simón) bajo distintas
+          condiciones musicales.
+        </p>
+        <p>
+          <strong>Duración:</strong> 15-30 minutos, con supervisión de personal
+          capacitado.
+        </p>
+        <p>
+          <strong>Requisitos:</strong> tener al menos 19 años y no tener
+          condiciones neurológicas que afecten el desempeño cognitivo.
+        </p>
+        <p>
+          No hay riesgos significativos, aunque podrías experimentar ligera
+          fatiga mental. No recibirás beneficios directos, pero tu participación
+          contribuirá al conocimiento científico. Toda la información será
+          confidencial, anónima y usada solo con fines investigativos.
+        </p>
+        <p>
+          Tu participación es voluntaria y puedes retirarte en cualquier momento
+          sin penalización.
+        </p>
+
+        <div class="mt-4 text-center">
+          <p><strong>¿Aceptas participar?</strong></p>
+          <button id="accept-consent" class="btn btn-primary me-2">
+            Sí, acepto
+          </button>
+          <button id="decline-consent" class="btn btn-danger">
+            No, no acepto
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="demographics-section"
+        class="card shadow p-4 mt-4"
+        style="display: none"
+      >
+        <h2 class="mb-4 text-center">Ficha Sociodemográfica</h2>
+        <hr />
+        <form id="demographics-form">
+          <div class="mb-3">
+            <label for="gender" class="form-label">¿Cuál es tu sexo?</label>
+            <div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="gender"
+                  id="genderMale"
+                  value="Hombre"
+                  required
+                />
+                <label class="form-check-label" for="genderMale">Hombre</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="gender"
+                  id="genderFemale"
+                  value="Mujer"
+                />
+                <label class="form-check-label" for="genderFemale">Mujer</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="gender"
+                  id="genderPreferNotSay"
+                  value="Prefiero no decirlo"
+                />
+                <label class="form-check-label" for="genderPreferNotSay"
+                  >Prefiero no decirlo</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="age" class="form-label">¿Cuál es tu edad?</label>
+            <select class="form-select" id="age" name="age" required>
+              <option value="">Selecciona tu edad</option>
+              <option value="19">19 años</option>
+              <option value="20">20 años</option>
+              <option value="21">21 años</option>
+              <option value="22">22 años</option>
+              <option value="23">23 años</option>
+              <option value="24">24 años</option>
+              <option value="25">25 años</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="semester" class="form-label"
+              >¿En qué semestre estás actualmente?</label
+            >
+            <select class="form-select" id="semester" name="semester" required>
+              <option value="">Selecciona tu semestre</option>
+              <option value="1">Primer</option>
+              <option value="2">Segundo</option>
+              <option value="3">Tercero</option>
+              <option value="4">Cuarto</option>
+              <option value="5">Quinto</option>
+              <option value="6">Sexto</option>
+              <option value="7">Séptimo</option>
+              <option value="8">Octavo</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label"
+              >¿Trabajas actualmente además de estudiar?</label
+            >
+            <div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="work"
+                  id="workYes"
+                  value="Si"
+                  required
+                />
+                <label class="form-check-label" for="workYes">Sí</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="work"
+                  id="workNo"
+                  value="No"
+                />
+                <label class="form-check-label" for="workNo">No</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="work"
+                  id="workSometimes"
+                  value="A veces"
+                />
+                <label class="form-check-label" for="workSometimes"
+                  >A veces</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">¿Manejas regularmente?</label>
+            <div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="drive"
+                  id="driveYes"
+                  value="Si"
+                  required
+                />
+                <label class="form-check-label" for="driveYes">Sí</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="drive"
+                  id="driveNo"
+                  value="No"
+                />
+                <label class="form-check-label" for="driveNo">No</label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="sleep" class="form-label"
+              >¿Cuántas horas duermes en promedio por noche?</label
+            >
+            <div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="sleep"
+                  id="sleepLess5"
+                  value="<5"
+                  required
+                />
+                <label class="form-check-label" for="sleepLess5"
+                  >Menos de 5 horas</label
+                >
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="sleep"
+                  id="sleep5_6"
+                  value="5 a 6"
+                />
+                <label class="form-check-label" for="sleep5_6"
+                  >5 a 6 horas</label
+                >
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="sleep"
+                  id="sleep7_8"
+                  value="7 a 8"
+                />
+                <label class="form-check-label" for="sleep7_8"
+                  >7 a 8 horas</label
+                >
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="sleep"
+                  id="sleepMore8"
+                  value=">8"
+                />
+                <label class="form-check-label" for="sleepMore8"
+                  >Más de 8 horas</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label"
+              >¿Escuchas música mientras estudias?</label
+            >
+            <div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="musicStudy"
+                  id="musicStudyNever"
+                  value="Nunca"
+                  required
+                />
+                <label class="form-check-label" for="musicStudyNever"
+                  >Nunca</label
+                >
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="musicStudy"
+                  id="musicStudySometimes"
+                  value="A veces"
+                />
+                <label class="form-check-label" for="musicStudySometimes"
+                  >A veces</label
+                >
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="musicStudy"
+                  id="musicStudyFrequent"
+                  value="Frecuentemente"
+                />
+                <label class="form-check-label" for="musicStudyFrequent"
+                  >Frecuentemente</label
+                >
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="musicStudy"
+                  id="musicStudyAlways"
+                  value="Siempre"
+                />
+                <label class="form-check-label" for="musicStudyAlways"
+                  >Siempre</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3" id="music-genre-group" style="display: none">
+            <label for="musicGenre" class="form-label"
+              >¿Qué género musical escuchas con más frecuencia?</label
+            >
+            <select class="form-select" id="musicGenre" name="musicGenre">
+              <option value="">Selecciona un género</option>
+              <option value="Pop">Pop</option>
+              <option value="Rock">Rock</option>
+              <option value="Clasica">Clásica</option>
+              <option value="Urbano">Reguetón/Urbano</option>
+              <option value="Electronica">Electrónica</option>
+              <option value="Indie">Indie/Alternativa</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label"
+              >¿Qué tan concentrado te sientes al estudiar?</label
+            >
+            <div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="concentration"
+                  id="concNada"
+                  value="Nada"
+                  required
+                />
+                <label class="form-check-label" for="concNada">Nada</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="concentration"
+                  id="concPoco"
+                  value="Poco"
+                />
+                <label class="form-check-label" for="concPoco">Poco</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="concentration"
+                  id="concModerado"
+                  value="Moderadamente"
+                />
+                <label class="form-check-label" for="concModerado"
+                  >Moderadamente</label
+                >
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="concentration"
+                  id="concMucho"
+                  value="Mucho"
+                />
+                <label class="form-check-label" for="concMucho">Mucho</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="concentration"
+                  id="concTotal"
+                  value="Totalmente"
+                />
+                <label class="form-check-label" for="concTotal"
+                  >Totalmente</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label"
+              >¿Cuántas horas al día usas pantallas (celular, PC, etc.)?</label
+            >
+            <div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="screenTime"
+                  id="screenLess2"
+                  value="<2"
+                  required
+                />
+                <label class="form-check-label" for="screenLess2"
+                  >Menos de 2h</label
+                >
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="screenTime"
+                  id="screen2_4"
+                  value="2 a 4"
+                />
+                <label class="form-check-label" for="screen2_4">2 a 4h</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="screenTime"
+                  id="screen4_6"
+                  value="4 a 6"
+                />
+                <label class="form-check-label" for="screen4_6">4 a 6h</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input
+                  class="form-check-input"
+                  type="radio"
+                  name="screenTime"
+                  id="screenMore6"
+                  value=">6"
+                />
+                <label class="form-check-label" for="screenMore6"
+                  >Más de 6h</label
+                >
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">
+            Continuar al Experimento
+          </button>
+        </form>
+      </div>
+          <div
+      id="completion-message"
+      class="experiment-section"
+      style="display: none"
+    >
+      <h2>¡Gracias por tu participación!</h2>
+      <hr />
+      <p>
+        Hemos terminado el experimento. Agradecemos mucho tu tiempo y
+        contribución a nuestra investigación. Puedes cerrar esta ventana.
+      </p>
+    </div>
+    </div>
+
+    <div id="experiment-section" style="display: none">
+      <div id="jspsych-display"></div>
+    </div>
+
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="dist/jspsych.js"></script>
+    <script src="dist/plugin-html-keyboard-response.js"></script>
+    <script src="dist/plugin-fullscreen.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/experiment.js"></script>
+  </body>
+</html>
