@@ -16,9 +16,17 @@
     <link href="css/mystiles.css" rel="stylesheet" />
   </head>
   <body>
-    <div id="container" class="container mt-5">
+    <div
+      id="access-denied-message"
+      style="text-align: center; margin-top: 50px"
+    >
+      <h2>Acceso Denegado</h2>
+      <p>Por favor, accede al experimento a través de la URL proporcionada.</p>
+      <p>Si crees que esto es un error, contacta al administrador.</p>
+    </div>
+    <div id="container" class="container mt-5" style="display: none;">
       <div id="consent-section" class="card shadow p-4">
-        <h2>Consentimiento Informado</h2>
+        <h2 class="text-center">Consentimiento Informado</h2>
         <hr />
         <p>
           Has sido invitado a participar en una investigación que permitirá
@@ -455,6 +463,7 @@
 
     <script src="dist/jspsych.js"></script>
     <script src="dist/plugin-html-keyboard-response.js"></script>
+    <script src="dist/plugin-call-function.js"></script>
     <script src="dist/plugin-fullscreen.js"></script>
     <script type="module" src="js/main.js"></script>
     <script src="js/experiment.js"></script>

@@ -1,13 +1,18 @@
 // main.js
+
 // Importa las funciones principales de Firebase desde las CDN
-// Asegúrate de que las URLs y versiones sean las correctas y estén actualizadas.
-// Usamos la misma versión (11.8.0) que mencionaste.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-app.js";
 
 // Importa la configuración de Firebase desde tu archivo local
-import { firebaseConfig } from './firebase-config.js';
+import { firebaseConfig } from "./firebase-config.js";
 
-import { getDatabase, ref, push, set} from "https://www.gstatic.com/firebasejs/11.8.0/firebase-database.js"; // Para Realtime Database
+import {
+  getDatabase,
+  ref,
+  push,
+  set,
+  get, // ¡Añadimos 'get' para leer datos!
+} from "https://www.gstatic.com/firebasejs/11.8.0/firebase-database.js"; // Para Realtime Database
 
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
@@ -16,180 +21,263 @@ const app = initializeApp(firebaseConfig);
 const realtimeDb = getDatabase(app); // Si usas Realtime Database
 
 // Hace que 'realtimeDb' (la instancia de Realtime Database) sea global o accesible para tu código jsPsych
-// Esto es útil si jsPsych o algún otro script antiguo espera encontrarlo en el objeto 'window'.
 window.firebaseDb = realtimeDb;
 
-console.log("Firebase inicializado y Realtime Database disponible en window.firebaseDb");
+console.log(
+  "Firebase inicializado y Realtime Database disponible en window.firebaseDb"
+);
 
 // --- Global Variable for participantId and groupId ---
-let participantId = null; // Se asignará después de obtener el group_id
+let participantId = null; // Se asignará y gestionará de forma persistente
 let groupId = null; // Se obtendrá del parámetro de la URL
+const SESSION_ID_KEY = 'experiment_session_id'; // Clave para localStorage
 
 // --- Utility Functions ---
-// Esta función ahora será para generar la parte única del ID
 function generateFirebasePushId() {
-    const participantsRef = ref(realtimeDb, 'participants_temp'); // Usa una referencia temporal para generar el ID
-    const newParticipantRef = push(participantsRef); // Genera un nuevo push ID
-    return newParticipantRef.key; // Retorna solo la clave generada
+  const participantsRef = ref(realtimeDb, "temp_id_generator"); 
+  const newParticipantRef = push(participantsRef); 
+  return newParticipantRef.key;
 }
 
-// Function to show a specific section and hide others
 function showSection(sectionToShow) {
-    const sections = { // Define sections here to make them accessible
-        consent: document.getElementById("consent-section"),
-        demographics: document.getElementById("demographics-section"),
-        jspsychDisplay: document.getElementById("experiment-section"),
-        completionMessage: document.getElementById("completion-message"),
-    };
+  const sections = {
+    consent: document.getElementById("consent-section"),
+    demographics: document.getElementById("demographics-section"),
+    jspsychDisplay: document.getElementById("experiment-section"),
+    completionMessage: document.getElementById("completion-message"),
+  };
 
-    Object.values(sections).forEach((section) => {
-        if (section) {
-            section.style.display = "none";
+  Object.values(sections).forEach((section) => {
+    if (section) {
+      section.style.display = "none";
+    }
+  });
+  if (sectionToShow) {
+    sectionToShow.style.display = "block";
+  }
+}
+
+async function saveToFirebaseRobustly(path, data, retries = 3, delay = 1000) {
+  const dataRef = ref(realtimeDb, path);
+
+  for (let i = 0; i <= retries; i++) {
+    try {
+      await set(dataRef, data);
+      console.log(`Datos guardados con éxito en ${path} (intento ${i + 1})`);
+      return;
+    } catch (error) {
+      console.error(`Error al guardar en ${path} (intento ${i + 1}/${retries + 1}):`, error);
+      if (i < retries) {
+        await new Promise(resolve => setTimeout(resolve, delay));
+      } else {
+        console.error(`Fallo definitivo al guardar datos en ${path} después de múltiples reintentos.`);
+        alert(`¡Ups! Hubo un problema al guardar tus datos importantes. Por favor, asegúrate de tener conexión a Internet. Si el problema persiste, contacta al investigador.`);
+        throw new Error("Fallo al guardar en Firebase después de reintentos.");
+      }
+    }
+  }
+}
+
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const validCode = "b!%21%26HEt9i3%2359dvEJJ%5E3P"; // Asegúrate de que este sea el código URL-encoded
+  const experimentContent = document.getElementById("container");
+  const deniedMessage = document.getElementById("access-denied-message");
+
+  const urlParams = new URLSearchParams(window.location.search);
+  groupId = urlParams.get("group");
+  const codeParam = urlParams.get("code");
+
+  if (codeParam === validCode && groupId) {
+    if (experimentContent) {
+      experimentContent.style.display = "block";
+    }
+    if (deniedMessage) {
+      deniedMessage.style.display = "none";
+    }
+    console.log("Acceso concedido. Iniciando configuración del experimento...");
+
+    // --- SOLUCIÓN: Declara participantData aquí, en el ámbito superior de DOMContentLoaded ---
+    let participantData = {}; // Inicializa como un objeto vacío para evitar ReferenceError
+
+    // --- Gestionar participantId de forma persistente ---
+    let storedParticipantId = localStorage.getItem(SESSION_ID_KEY);
+    let participantDataFromDb = null; // Para almacenar los datos existentes del participante
+
+    if (storedParticipantId) {
+      participantId = storedParticipantId;
+      console.log("Sesión reanudada con ID de participante:", participantId);
+      
+      // Intentar cargar datos existentes del participante desde Firebase
+      try {
+        const participantRef = ref(realtimeDb, `participants/${participantId}`);
+        const snapshot = await get(participantRef);
+        if (snapshot.exists()) {
+          participantDataFromDb = snapshot.val();
+          console.log("Datos de participante cargados desde Firebase:", participantDataFromDb);
+        } else {
+          console.log("No se encontraron datos existentes para el ID de participante en Firebase.");
+          // Si el ID existe en localStorage pero no en DB (quizás borrado manual), generar uno nuevo.
+          const newPushId = generateFirebasePushId();
+          participantId = `${groupId}${newPushId}`;
+          localStorage.setItem(SESSION_ID_KEY, participantId);
+          console.log("Generado nuevo ID de participante:", participantId);
         }
-    });
-    if (sectionToShow) {
-        sectionToShow.style.display = "block";
+      } catch (error) {
+        console.error("Error al cargar datos del participante desde Firebase:", error);
+        // En caso de error de carga, forzar un nuevo ID para evitar problemas.
+        const newPushId = generateFirebasePushId();
+        participantId = `${groupId}${newPushId}`;
+        localStorage.setItem(SESSION_ID_KEY, participantId);
+        console.log("Error al cargar datos, generado nuevo ID de participante:", participantId);
+      }
+    } else {
+      // Si no hay ID en localStorage, generar uno nuevo y guardarlo
+      const newPushId = generateFirebasePushId();
+      participantId = `${groupId}${newPushId}`;
+      localStorage.setItem(SESSION_ID_KEY, participantId);
+      console.log("Nueva sesión iniciada con ID de participante:", participantId);
     }
-}
-
-// Función para obtener parámetros de la URL
-function getUrlParameter(name) {
-    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
-    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)");
-    var results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
-}
-
-document.addEventListener("DOMContentLoaded", async () => { // Usamos 'async' para el await de la asignación del ID
-    // Obtener el ID del grupo de la URL
-    groupId = getUrlParameter('group');
-
-    if (!groupId) {
-        // Manejar el caso donde no se proporciona el grupo (ej. redireccionar, mostrar un mensaje de error)
-        alert("Error: No se ha especificado el grupo experimental en la URL. Por favor, usa el link correcto.");
-        // Opcional: podrías mostrar una sección de error o redirigir
-        showSection(document.getElementById("error-section")); // Asegúrate de tener un div con id="error-section"
-        return; // Detener la ejecución si no hay grupo
-    }
-
-    // Generar el participantId después de obtener el groupId
-    // Formato: GrupoX_FIREBASE_PUSH_ID
-    participantId = `${groupId}_${generateFirebasePushId()}`;
-
-    // --- Global Variables (moved participantId declaration outside) ---
-    let participantData = {}; // To store socio-demographic data
-
-    // References to HTML sections (moved inside DOMContentLoaded as they rely on DOM)
-    const sections = {
+    
+    // --- Determine initial section based on loaded data or lack thereof ---
+    const sections = { // Re-definir sections aquí para que estén en scope
         consent: document.getElementById("consent-section"),
         demographics: document.getElementById("demographics-section"),
         jspsychDisplay: document.getElementById("experiment-section"),
         completionMessage: document.getElementById("completion-message"),
     };
 
-    // References to buttons and interactive elements from the HTML
+    let initialProgressStage = 'start'; // Default stage
+
+    if (participantDataFromDb && participantDataFromDb.experiment_results && participantDataFromDb.experiment_results.completion_timestamp) {
+        // If experiment is already completed, show completion message
+        showSection(sections.completionMessage);
+        console.log("Experimento ya completado para este participante.");
+        return; // Exit main.js execution
+    } else if (participantDataFromDb && participantDataFromDb.current_stage) {
+        // If demographics are already saved, load participantData and determine current_stage
+             // Start from demographics_completed if stage not explicitly saved
+        participantData = participantDataFromDb; // Use data from DB
+        initialProgressStage =participantDataFromDb.current_stage;
+        showSection(sections.jspsychDisplay); // Show experiment section
+        console.log("Reanudando experimento desde la etapa:", initialProgressStage);
+        startJsPsychExperiment(participantData, showSection, saveToFirebaseRobustly, initialProgressStage, showSection );
+    } else {
+        // No demographics or completion found, start from consent/demographics
+        showSection(sections.consent); // Show the consent section first
+        console.log("Iniciando experimento desde la etapa de consentimiento.");
+        // Ensure participantData starts with at least participantId and groupId for demographics saving
+        participantData = { participantId: participantId, groupId: groupId }; // Initial minimal participantData
+    }
+
+    // --- Section Navigation Handling for Consent/Demographics ---
     const acceptConsentBtn = document.getElementById("accept-consent");
     const demographicsForm = document.getElementById("demographics-form");
-    const musicStudyRadios = document.querySelectorAll(
-        'input[name="musicStudy"]'
-    );
+    const musicStudyRadios = document.querySelectorAll('input[name="musicStudy"]');
     const musicGenreGroup = document.getElementById("music-genre-group");
 
-    // --- Section Navigation Handling ---
+    // This part should only run if consent/demographics are not yet completed
+    if (!participantDataFromDb || !participantDataFromDb.demographics) {
+        acceptConsentBtn.addEventListener("click", () => {
+            showSection(sections.demographics);
+        });
 
-    // 1. Consent Section
-    acceptConsentBtn.addEventListener("click", () => {
-        showSection(sections.demographics);
-    });
+        musicStudyRadios.forEach((radio) => {
+            radio.addEventListener("change", () => {
+                if (radio.value !== "Nunca") {
+                    musicGenreGroup.style.display = "block";
+                    document.getElementById("musicGenre").setAttribute("required", "required");
+                } else {
+                    musicGenreGroup.style.display = "none";
+                    document.getElementById("musicGenre").removeAttribute("required");
+                    document.getElementById("musicGenre").value = "";
+                }
+            });
+        });
 
-    // 2. Socio-demographic Form Section
-    // Conditional display for music genre question
-    musicStudyRadios.forEach((radio) => {
-        radio.addEventListener("change", () => {
-            if (radio.value !== "Nunca") {
-                musicGenreGroup.style.display = "block";
-                document
-                    .getElementById("musicGenre")
-                    .setAttribute("required", "required");
-            } else {
-                musicGenreGroup.style.display = "none";
-                document.getElementById("musicGenre").removeAttribute("required");
-                document.getElementById("musicGenre").value = ""; // Clear selection
+        demographicsForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const currentDemographicsData = {
+                groupId: groupId,
+                gender: document.querySelector('input[name="gender"]:checked')?.value || null,
+                age: document.getElementById("age").value || null,
+                semester: document.getElementById("semester").value || null,
+                drive: document.querySelector('input[name="drive"]:checked')?.value || null,
+                sleep: document.querySelector('input[name="sleep"]:checked')?.value || null,
+                musicStudy: document.querySelector('input[name="musicStudy"]:checked')?.value || null,
+                musicGenre: document.getElementById("musicGenre").value || "No escucha nada",
+                concentration: document.querySelector('input[name="concentration"]:checked')?.value || null,
+                screenTime: document.querySelector('input[name="screenTime"]:checked')?.value || null,
+                timestamp: new Date().toISOString(),
+            };
+
+            try {
+                // Update participantData to include demographics for passing to jsPsych
+                participantData.demographics = currentDemographicsData;
+                participantData.participantId = participantId; // Ensure participantId is present for rule
+                participantData.groupId = groupId; // Ensure groupId is present
+
+                // Save demographics and initial stage in Firebase
+                await saveToFirebaseRobustly(`participants/${participantId}`, {
+                    participantId: participantId, // For rules
+                    demographics: currentDemographicsData,
+                    current_stage: 'demographics_completed',
+                    groupId: groupId // Set initial stage
+                });
+                console.log("Datos sociodemográficos guardados en Firebase:", currentDemographicsData);
+                
+                showSection(sections.jspsychDisplay);
+                startJsPsychExperiment(participantData, showSection, saveToFirebaseRobustly, 'demographics_completed', showSection );
+
+            } catch (error) {
+                return;
             }
         });
-    });
-
-    demographicsForm.addEventListener("submit", async (event) => { // Usamos 'async' para guardar en Firebase
-        event.preventDefault(); // Prevent default form submission
-
-        // Collect data from the form based on index.html structure
-        participantData = {
-            participantId: participantId, // Use the globally declared ID
-            groupId: groupId, // Add the group ID to the data
-            gender:
-                document.querySelector('input[name="gender"]:checked')?.value || null,
-            age: document.getElementById("age").value || null,
-            semester: document.getElementById("semester").value || null,
-            drive:
-                document.querySelector('input[name="drive"]:checked')?.value || null,
-            sleep:
-                document.querySelector('input[name="sleep"]:checked')?.value || null,
-            musicStudy:
-                document.querySelector('input[name="musicStudy"]:checked')?.value ||
-                null,
-            musicGenre:
-                document.getElementById("musicGenre").value || "No escucha nada", // Default if "Nunca" was selected
-            concentration:
-                document.querySelector('input[name="concentration"]:checked')?.value ||
-                null,
-            screenTime:
-                document.querySelector('input[name="screenTime"]:checked')?.value ||
-                null,
-            timestamp: new Date().toISOString(), // Add timestamp
-        };
-
-        // --- Guardar datos sociodemográficos en Firebase ---
-        try {
-            const participantRef = ref(realtimeDb, `participants/${participantId}`);
-            await set(participantRef, participantData);
-            console.log("Datos sociodemográficos guardados en Firebase:", participantData);
-        } catch (error) {
-            console.error("Error al guardar datos sociodemográficos en Firebase:", error);
-            alert("Hubo un error al guardar tus datos. Por favor, inténtalo de nuevo.");
-            return;
-        }
-
-
-        console.log("Datos sociodemográficos capturados:", participantData);
-        document.getElementById("container").style.display = "none";
-        showSection(sections.jspsychDisplay);
-        // Asegúrate de que `startJsPsychExperiment` esté definido en algún lugar y acepte `participantData` y `showSection`
-        startJsPsychExperiment(participantData, showSection);
-    });
-
-    // --- Initial Display ---
-    showSection(sections.consent); // Show the consent section first when the page loads
+    }
 
     // --- DEBUGGING CODE (Comment out or remove for production) ---
-    // This part bypasses the consent and demographic sections for quick testing.
     /*
     document.getElementById("container").style.display = "none";
-    participantData = {
-        participantId: 'DEBUG_' + participantId, // Use the global participantId for debug as well
-        groupId: groupId, // Also include group ID in debug data
-        gender: 'Hombre',
-        age: '22',
-        semester: '4',
-        drive: 'Si',
-        sleep: '7 a 8',
-        musicStudy: 'A veces',
-        musicGenre: 'Rock',
-        concentration: 'Moderadamente',
-        screenTime: '4 a 6',
-        juegaVideojuegos: 'Sí', // Ensure this field exists in your HTML if used
-        timestamp: new Date().toISOString()
+    const debugParticipantId = `${groupId}_DEBUG_${generateFirebasePushId()}`;
+    localStorage.setItem(SESSION_ID_KEY, debugParticipantId);
+    participantId = debugParticipantId;
+    
+    const debugDemographicsData = {
+        participantId: participantId,
+        groupId: groupId,
+        gender: 'Hombre', age: '22', semester: '4', drive: 'Si', sleep: '7 a 8',
+        musicStudy: 'A veces', musicGenre: 'Rock', concentration: 'Moderadamente',
+        screenTime: '4 a 6', juegaVideojuegos: 'Sí', timestamp: new Date().toISOString()
     };
+    participantData = { 
+        participantId: participantId, 
+        groupId: groupId, // Asegurarse de que groupId esté en participantData
+        demographics: debugDemographicsData 
+    }; 
+    
+    // Simular un estado de progreso para depuración
+    // let debugInitialStage = 'demographics_completed'; // Comienza después de demográficos
+    // let debugInitialStage = 'simon_completed'; // Comienza después de Simon
+    let debugInitialStage = 'stroop_completed'; // Comienza después de Stroop
+
+    await saveToFirebaseRobustly(`participants/${participantId}`, {
+        participantId: participantId,
+        demographics: debugDemographicsData,
+        current_stage: debugInitialStage // Simula el progreso guardado
+    });
+
     showSection(sections.jspsychDisplay);
-    startJsPsychExperiment(participantData, showSection);
+    startJsPsychExperiment(participantData, showSection, saveToFirebaseRobustly, debugInitialStage);
     */
+
+  } else {
+    if (experimentContent) {
+      experimentContent.style.display = "none";
+    }
+    if (deniedMessage) {
+      deniedMessage.style.display = "block";
+    }
+    console.warn("Acceso denegado: Código de URL incorrecto o ausente o groupId faltante.");
+  }
 });

@@ -1,74 +1,53 @@
-function startJsPsychExperiment(participantData, showSection) {
+function startJsPsychExperiment(
+  participantInfo,
+  saveToFirebaseRobustly,
+  saveToFirebaseRobustly,
+  initialProgressStage,
+  showSection
+) {
+  console.log(
+    "Iniciando experimento jsPsych con información del participante:",
+    participantInfo.participantId,
+    "grupo",
+    participantInfo.groupId
+  );
+  document.getElementById("container").style.display = "none";
+
+  console.log("Etapa inicial detectada:", initialProgressStage);
   let jsPsych = initJsPsych({
     display_element: "jspsych-display",
-    on_finish: function () {
+    on_finish: async function (data) {
       showSection(document.getElementById("completion-message"));
+
       // Obtiene todos los datos registrados por jsPsych
       const allData = jsPsych.data.get();
 
-      // Filtra solo los trials que son de tipo "response"
-      const responseData = allData
-        .filter({ task: "Response", fase: "Prueba" })
-        .values();
+      // Guardar el estado final de completado en Firebase
+      try {
+        await saveToFirebaseRobustly(
+          `participants/${participantInfo.participantId}/experiment_results/completion_timestamp`,
+          new Date().toISOString()
+        );
+        await saveToFirebaseRobustly(
+          `participants/${participantInfo.participantId}/current_stage`,
+          "experiment_completed"
+        );
+        console.log("Estado de finalización del experimento guardado.");
+        localStorage.removeItem("experiment_session_id"); // Limpiar ID de sesión al finalizar con éxito
+      } catch (error) {
+        console.error(
+          "Error al guardar el estado de finalización del experimento:",
+          error
+        );
+      }
 
-      // Filtra los trials de respuesta específicos para la tarea "stroop"
-      const stroopResponses = allData
-        .filter({
-          task: "Response",
-          test_part: "Stroop",
-          fase: "Prueba",
-        })
-        .values();
-      const stroopResponsesAutomat = allData
-        .filter({
-          task: "Response",
-          test_part: "Stroop",
-          fase: "Automatizacion",
-        })
-        .values();
-
-      // Filtra los trials de respuesta específicos para la tarea "simon"
-      const simonResponses = allData
-        .filter({
-          task: "Response",
-          test_part: "Simon",
-          fase: "Prueba",
-        })
-        .values();
-
-      const gonogoResponses = allData
-        .filter({
-          task: "Response",
-          test_part: "Go/NoGo",
-          fase: "Prueba",
-        })
-        .values();
-
-      console.log("¡Experimento finalizado!");
-      console.log("Todos los datos del experimento:", allData.values()); // Muestra todos los datos
-      console.log("Datos de todos los trials de respuesta:", responseData);
-
-      console.log(
-        "Datos de los trials de respuesta del Simon:",
-        simonResponses
-      );
-      console.log(
-        "Datos de los trials de respuesta del Automatizacion Stroop:",
-        stroopResponsesAutomat
-      );
-      console.log(
-        "Datos de los trials de respuesta del Stroop:",
-        stroopResponses
-      );
-      console.log(
-        "Datos de los trials de respuesta del gongo:",
-        gonogoResponses
-      );
+      console.log("¡Experimento finalizado completamente!");
+      // Aquí podrías mostrar un mensaje de agradecimiento final o redirigir.
     },
     on_trial_finish: function (data) {
       if (data.task === "Response") {
-        data.participantId = participantData.participantId;
-        data.groupId = participantData.groupId
+        data.participantId = participantInfo.participantId;
+        data.groupId = participantInfo.groupId;
       }
     },
   });
@@ -490,13 +469,56 @@ function startJsPsychExperiment(participantData, showSection) {
     },
   };
 
+  const guardar_simon = {
+    type: jsPsychCallFunction,
+    async: true, // Crucial: Tells jsPsych this function will be asynchronous
+    func: async function (done) {
+      // 'done' is the callback function provided by jsPsych
+      console.log("Iniciando guardado de datos de la tarea Simon...");
+
+      const simonData = jsPsych.data
+        .get()
+        .filter({ test_part: "Simon", task: "Response" })
+        .values();
+      const simonPractica = simonData.filter((d) => d.fase === "Practica");
+      const simonPrueba = simonData.filter((d) => d.fase === "Prueba");
+
+      const dataToSave = {
+        practica: simonPractica,
+        prueba: simonPrueba,
+        timestamp_completed: new Date().toISOString(),
+      };
+
+      try {
+        await saveToFirebaseRobustly(
+          `participants/${participantInfo.participantId}/experiment_results/simon_results`,
+          dataToSave
+        );
+        await saveToFirebaseRobustly(
+          `participants/${participantInfo.participantId}/current_stage`,
+          "simon_completed"
+        );
+        console.log("Datos de Simon guardados y stage actualizado.");
+        // Call 'done()' when the asynchronous operation is complete and successful
+        done();
+      } catch (error) {
+        console.error("Error al guardar datos de Simon:", error);
+        // You might want to pass an error message to done() or handle it differently
+        // if the save fails and you want to stop the experiment or retry.
+        done(new Error("Failed to save Simon data.")); // Pass an error to 'done'
+      }
+    },
+    // You can still add other properties if you want a visual indication during saving
+    // stimulus: '<p>Guardando datos de la tarea de Simon...</p>',
+    // choices: jsPsych.NO_KEYS,
+    // trial_duration: null // null or a very long duration if you rely purely on 'done()'
+  };
   ///////////////////////////
   ///////STROOP//////////////
   ///////////////////////////
 
   //VARIABLES STROOP
   let bloque_automatizacion_stroop = 1;
-  let bloque_stroop = 1;
   let automatizacionRespCorr = 0;
   const colors = ["rojoStroop", "azulStroop", "amarilloStroop"];
 
@@ -768,6 +790,44 @@ function startJsPsychExperiment(participantData, showSection) {
     },
   };
 
+  const guardar_stroop = {
+    type: jsPsychCallFunction,
+    async: true, // Crucial: Tells jsPsych this function will be asynchronous
+    func: async function (done) {
+      const stroopData = jsPsych.data
+        .get()
+        .filter({ test_part: "Stroop", task: "Response" })
+        .values();
+      const stroopAutomatizacion = stroopData.filter(
+        (d) => d.fase === "Automatizacion"
+      );
+      const stroopPractica = stroopData.filter((d) => d.fase === "Practica");
+      const stroopPrueba = stroopData.filter((d) => d.fase === "Prueba");
+
+      const dataToSave = {
+        automatizacion: stroopAutomatizacion,
+        practica: stroopPractica,
+        prueba: stroopPrueba,
+        timestamp_completed: new Date().toISOString(),
+      };
+
+      try {
+        await saveToFirebaseRobustly(
+          `participants/${participantInfo.participantId}/experiment_results/stroop_results`,
+          dataToSave
+        );
+        await saveToFirebaseRobustly(
+          `participants/${participantInfo.participantId}/current_stage`,
+          "stroop_completed"
+        );
+        console.log("Datos de Stroop guardados y stage actualizado.");
+        done();
+      } catch (error) {
+        console.error("Error al guardar datos de Stroop:", error);
+        done(new Error("Failed to save Simon data.")); // Pass an error to 'done'
+      }
+    },
+  };
   const test_practica_stroop = {
     timeline: [fixation, prueba_stroop, feedback],
     timeline_variables: trialBaseStroopPractica,
@@ -1002,45 +1062,120 @@ function startJsPsychExperiment(participantData, showSection) {
     randomize_order: true,
   };
 
+  const guardar_go_nogo = {
+    type: jsPsychCallFunction,
+    async: true,
+    func: async function (done) {
+      const gonogoData = jsPsych.data
+        .get()
+        .filter({ test_part: "Go/NoGo", task: "Response" })
+        .values();
+      console.log(gonogoData);
+      const gonogoPractica = gonogoData.filter((d) => d.fase === "Practica");
+      const gonogoPrueba = gonogoData.filter((d) => d.fase === "Prueba");
+
+      const dataToSave = {
+        practica: gonogoPractica,
+        prueba: gonogoPrueba,
+        timestamp_completed: new Date().toISOString(),
+      };
+
+      try {
+        await saveToFirebaseRobustly(
+          `participants/${participantInfo.participantId}/experiment_results/gonogo_results`,
+          dataToSave
+        );
+        await saveToFirebaseRobustly(
+          `participants/${participantInfo.participantId}/current_stage`,
+          "gonogo_completed"
+        );
+        console.log("Datos de Go/NoGo guardados y stage actualizado.");
+        done();
+      } catch (error) {
+        console.error("Error al guardar datos de Go/NoGo:", error);
+        done(new Error("Failed to save Simon data.")); // Pass an error to 'done'
+      }
+    },
+  };
+
   const inter_round_break_and_countdown = {
     timeline: [break_45_seconds_trial, countdown_trial],
   };
 
-  timeline.push(
-    //fullscreen_trial,
-    //instruccion_practica_simon,
-    countdown_trial,
-    test_procedure_practica_simon,
-    //instruccion_test_simon,
-    countdown_trial,
-    first_round_simon,
-    //inter_round_break_and_countdown,
-    second_round_simon,
-    //break_60_seconds_trial,
-    //practica_colores,
-    countdown_trial,
-    fase_automatizacion,
-    //break_after_automation_trial,
-    //instruccion_practica_stroop,
-    countdown_trial,
-    test_practica_stroop,
-    //instruccion_stroop,
-    countdown_trial,
-    first_round_stroop,
-    //inter_round_break_and_countdown
-    second_round_stroop,
-    //break_60_seconds_trial,
-    //instruccion_practica_gonogo,
-    countdown_trial,
-    test_procedure_practice_gonogo,
-    //instruccion_test_gonogo,
-    countdown_trial,
-    first_round_go_nogo,
-    inter_round_break_and_countdown,
-    second_round_go_nogo
-    //fullscreen_trial_exit
-  );
+  const simon_block_completo = {
+    timeline: [
+      instruccion_practica_simon,
+      countdown_trial,
+      test_procedure_practica_simon,
+      instruccion_test_simon,
+      countdown_trial,
+      first_round_simon,
+      inter_round_break_and_countdown,
+      second_round_simon,
+      guardar_simon,
+      break_60_seconds_trial,
+    ],
+  };
 
+  const stroop_block_completo = {
+    timeline: [
+      practica_colores,
+      countdown_trial,
+      fase_automatizacion,
+      break_after_automation_trial,
+      instruccion_practica_stroop,
+      countdown_trial,
+      test_practica_stroop,
+      instruccion_stroop,
+      countdown_trial,
+      first_round_stroop,
+      inter_round_break_and_countdown,
+      second_round_stroop,
+      guardar_stroop,
+      break_60_seconds_trial,
+    ],
+  };
+
+  const gonogo_block_completo = {
+    timeline: [
+      instruccion_practica_gonogo,
+      countdown_trial,
+      test_procedure_practice_gonogo,
+      instruccion_test_gonogo,
+      countdown_trial,
+      first_round_go_nogo,
+      inter_round_break_and_countdown,
+      second_round_go_nogo,
+      guardar_go_nogo,
+    ],
+  };
+
+  if (
+    initialProgressStage === "demographics_completed" ||
+    initialProgressStage === "start"
+  ) {
+    // Si demográficos acabados o es un inicio fresco
+    timeline.push(
+      fullscreen_trial,
+      simon_block_completo,
+      stroop_block_completo,
+      gonogo_block_completo,
+      fullscreen_trial_exit
+    );
+  } else if (initialProgressStage === "simon_completed") {
+    timeline.push(
+      fullscreen_trial,
+      stroop_block_completo,
+      gonogo_block_completo,
+      fullscreen_trial_exit
+    );
+  } else if (initialProgressStage === "stroop_completed") {
+    timeline.push(
+      //fullscreen_trial,
+      gonogo_block_completo,
+      fullscreen_trial_exit
+    );
+  }
   jsPsych.run(timeline);
 }
 
@@ -1100,7 +1235,7 @@ function generarTrialBaseSimon(numTrials, type, jsPsych) {
 }
 
 function generarTrialsStroopCompletos(numTrialsPorTipo, jsPsych, type) {
-  const words = ["ROJO", "AZUL", "AMARILLO"];
+  const words = ["Rojo", "Azul", "Amarillo"];
   const colors = ["rojoStroop", "azulStroop", "amarilloStroop"];
   const words_neutras = ["XXXXX", "XXXXX", "XXXXX"];
 
