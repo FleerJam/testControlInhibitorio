@@ -8,35 +8,51 @@ function startJsPsychExperiment(participantData, showSection) {
       const allData = jsPsych.data.get();
 
       // Filtra solo los trials que son de tipo "response"
-      const responseData = allData.filter({ task: "response" }).values();
+      const responseData = allData
+        .filter({ task: "Response", fase: "Prueba" })
+        .values();
 
       // Filtra los trials de respuesta específicos para la tarea "stroop"
       const stroopResponses = allData
         .filter({
-          task: "response",
-          test_part: "stroop",
-          stroop_part: "stroop_prueba",
+          task: "Response",
+          test_part: "Stroop",
+          fase: "Prueba",
         })
         .values();
       const stroopResponsesAutomat = allData
         .filter({
-          task: "response",
-          test_part: "stroop",
-          stroop_part: "stroop_automatizacion",
+          task: "Response",
+          test_part: "Stroop",
+          fase: "Automatizacion",
         })
         .values();
 
       // Filtra los trials de respuesta específicos para la tarea "simon"
       const simonResponses = allData
         .filter({
-          task: "response",
-          test_part: "simon",
+          task: "Response",
+          test_part: "Simon",
+          fase: "Prueba",
+        })
+        .values();
+
+      const gonogoResponses = allData
+        .filter({
+          task: "Response",
+          test_part: "Simon",
+          stroop_part: "Prueba",
         })
         .values();
 
       console.log("¡Experimento finalizado!");
       console.log("Todos los datos del experimento:", allData.values()); // Muestra todos los datos
       console.log("Datos de todos los trials de respuesta:", responseData);
+
+      console.log(
+        "Datos de los trials de respuesta del Simon:",
+        simonResponses
+      );
       console.log(
         "Datos de los trials de respuesta del Automatizacion Stroop:",
         stroopResponsesAutomat
@@ -46,15 +62,13 @@ function startJsPsychExperiment(participantData, showSection) {
         stroopResponses
       );
       console.log(
-        "Datos de los trials de respuesta del Simon:",
-        simonResponses
+        "Datos de los trials de respuesta del gongo:",
+        gonogoResponses
       );
     },
     on_trial_finish: function (data) {
-      if (data.task === "response") {
+      if (data.task === "Response") {
         data.participantId = participantData.participantId;
-        console.log("Trial terminado:", data);
-        console.log("Se presionó la tecla con el código:", data.response);
       }
     },
   });
@@ -69,12 +83,20 @@ function startJsPsychExperiment(participantData, showSection) {
   const NO_DATA_MESSAGE =
     "<p style='font-size: 40px; color: gray;'>Esperando información...</p>";
 
-  const gTimeResponse = 1400000;
+  /*const gTimeResponse = 1400;
   const gVisibleStimul = 600;
   const gVisibleFixation = 400;
   const gTimeFeedbaak = 500;
   const gTimeFixation = function () {
     return jsPsych.randomization.sampleWithoutReplacement([600, 700], 1)[0];
+  };*/
+
+  const gTimeResponse = 0;
+  const gVisibleStimul = 0;
+  const gVisibleFixation = 0;
+  const gTimeFeedbaak = 0;
+  const gTimeFixation = function () {
+    return jsPsych.randomization.sampleWithoutReplacement([0, 0], 1)[0];
   };
 
   const footer_simon = `
@@ -103,8 +125,6 @@ function startJsPsychExperiment(participantData, showSection) {
     trial_duration: gTimeFeedbaak, // Short duration for quick feedback
     choices: "NO_KEYS", // No keys can be pressed to advance
     stimulus: function () {
-      // **KEY CHANGE:** Get the 'test_part' directly from timeline variables
-      // This ensures context from the *current* block/timeline
       const current_test_part = jsPsych.evaluateTimelineVariable("test_part");
 
       // Still get the last trial data to check correctness/response time
@@ -122,7 +142,7 @@ function startJsPsychExperiment(participantData, showSection) {
       }
 
       // Determine the feedback message based on the last response trial
-      if (last_trial_data.task === "response") {
+      if (last_trial_data.task === "Response") {
         if (last_trial_data.correct && last_trial_data.response !== null) {
           mensaje = CORRECT_MESSAGE;
         } else if (last_trial_data.response === null) {
@@ -136,9 +156,9 @@ function startJsPsychExperiment(participantData, showSection) {
       }
 
       // Assign the footer content based on the *current block's context*
-      if (current_test_part === "stroop") {
+      if (current_test_part === "Stroop") {
         footer_content = footer_stroop;
-      } else if (current_test_part === "simon") {
+      } else if (current_test_part === "Simon") {
         footer_content = footer_simon;
       }
       // If current_test_part is neither, footer_content will remain an empty string
@@ -158,9 +178,9 @@ function startJsPsychExperiment(participantData, showSection) {
       const current_test_part = jsPsych.evaluateTimelineVariable("test_part");
       let footer_content = "";
 
-      if (current_test_part === "stroop") {
+      if (current_test_part === "Stroop") {
         footer_content = footer_stroop;
-      } else if (current_test_part === "simon") {
+      } else if (current_test_part === "Simon") {
         footer_content = footer_simon;
       }
 
@@ -318,20 +338,9 @@ function startJsPsychExperiment(participantData, showSection) {
   ///////////////////////////
 
   // Variables SIMON
-  let calc_important_variables = calcular_trialbase_Simon();
-  let gVideoWidth = calc_important_variables.ancho;
-  let trialbaseSimonPractica = calc_important_variables.trialbase;
+  const trialbaseSimonPractica = generarTrialBaseSimon(12, "Practica", jsPsych);
+  const trialBaseSimon = generarTrialBaseSimon(60, "Prueba", jsPsych);
 
-  let reps = 5;
-  const correct_responses_simon = {
-    1: "ShiftLeft",
-    2: "ShiftRight",
-  };
-
-  let trialBaseSimon = jsPsych.randomization.repeat(
-    trialbaseSimonPractica,
-    reps
-  );
   console.log(trialbaseSimonPractica, trialBaseSimon);
 
   const instruccion_practica_simon = {
@@ -420,13 +429,9 @@ function startJsPsychExperiment(participantData, showSection) {
       }, gVisibleStimul);
     },
     data: {
-      task: "response",
-      // Calculamos toda la información de la condición aquí
-      // `this` se refiere al objeto del trial en jsPsych data functions
-      trial_info: function () {
-        const stimCode = jsPsych.evaluateTimelineVariable("stim");
-        const xPos = jsPsych.evaluateTimelineVariable("xpos");
-        return getSimonTrialInfo(stimCode, xPos);
+      task: "Response",
+      fase: function () {
+        return jsPsych.evaluateTimelineVariable("fase");
       },
     },
     trial_duration: gTimeResponse,
@@ -472,127 +477,35 @@ function startJsPsychExperiment(participantData, showSection) {
   ///////////////////////////
 
   //VARIABLES STROOP
-
   let bloque_automatizacion_stroop = 1;
   let bloque_stroop = 1;
   let automatizacionRespCorr = 0;
-  const words = ["ROJO", "AZUL", "AMARILLO"];
   const colors = ["rojoStroop", "azulStroop", "amarilloStroop"];
-  const words_neutras = ["XXXXX", "XXXXX", "XXXXX"];
-  const words_circulos = ["0", "0", "0"];
 
   let currentColor = "lightgray";
-  const correct_responses_stroop = {
-    1: "Digit1",
-    2: "Digit2",
-    3: "Digit3",
-  };
-  // Define trial quantities in a clear configuration object
-  const trialQuantities = {
-    main: {
-      circulos: 30,
-      neutras: 20,
-      congruentes: 20,
-      incongruentes: 20,
-    },
-    practice: {
-      neutras: 4,
-      congruentes: 4,
-      incongruentes: 4,
-    },
-  };
-
-  function createStroopTrials(type, count, jsPsychInstance) {
-    let wordSet;
-    let isCongruent;
-
-    switch (type) {
-      case "circulos":
-        wordSet = words_circulos;
-        isCongruent = true; // Circles are always "congruent" with themselves (color matches stimType)
-        break;
-      case "neutras":
-        wordSet = words_neutras;
-        isCongruent = true; // Neutral words are always presented "congruently" with their color (word is neutral, color varies)
-        break;
-      case "congruentes":
-        wordSet = words;
-        isCongruent = true;
-        break;
-      case "incongruentes":
-        wordSet = words;
-        isCongruent = false;
-        break;
-      default:
-        console.error("Unknown Stroop trial type:", type);
-        return [];
-    }
-    return MezclarPalabrasStroop(
-      wordSet,
-      colors,
-      isCongruent,
-      count,
-      jsPsychInstance
-    );
-  }
 
   // --- Generate Main Trials ---
-  const trialCirculos = createStroopTrials(
-    "circulos",
-    trialQuantities.main.circulos,
-    jsPsych
-  );
-  const trialNeutras = createStroopTrials(
-    "neutras",
-    trialQuantities.main.neutras,
-    jsPsych
-  );
-  const trialCongruentes = createStroopTrials(
-    "congruentes",
-    trialQuantities.main.congruentes,
-    jsPsych
-  );
-  const trialIncongruentes = createStroopTrials(
-    "incongruentes",
-    trialQuantities.main.incongruentes,
-    jsPsych
+  const trialCirculos = generarTrialBaseStroop(
+    ["0", "0", "0"],
+    colors,
+    true,
+    30,
+    jsPsych,
+    "Automatizacion"
   );
 
   // Combine main trials
-  const trialBaseStroop = [
-    ...trialCongruentes,
-    ...trialNeutras,
-    ...trialIncongruentes,
-  ];
-
-  // --- Generate Practice Trials ---
-  const trialNeutrasPractica = createStroopTrials(
-    "neutras",
-    trialQuantities.practice.neutras,
-    jsPsych
-  );
-  const trialCongruentesPractica = createStroopTrials(
-    "congruentes",
-    trialQuantities.practice.congruentes,
-    jsPsych
-  );
-  const trialIncongruentesPractica = createStroopTrials(
-    "incongruentes",
-    trialQuantities.practice.incongruentes,
-    jsPsych
-  );
-
+  const trialBaseStroop = generarTrialsStroopCompletos(20, jsPsych, "Prueba");
   // Combine practice trials
-  const trialBaseStroopPractica = [
-    ...trialCongruentesPractica,
-    ...trialNeutrasPractica,
-    ...trialIncongruentesPractica,
-  ];
-
+  const trialBaseStroopPractica = generarTrialsStroopCompletos(
+    4,
+    jsPsych,
+    "Practica"
+  );
   // --- Logging for verification ---
   console.log("Trials Círculos:", trialCirculos);
-  console.log("Trials Base (Main):", trialBaseStroop);
   console.log("Trials Base (Práctica):", trialBaseStroopPractica);
+  console.log("Trials Base (Main):", trialBaseStroop);
 
   const practica_color_dinamico_con_bucle = {
     type: jsPsychHtmlKeyboardResponse,
@@ -638,6 +551,8 @@ function startJsPsychExperiment(participantData, showSection) {
     },
   };
 
+  let ronda_stroop = false;
+
   const automatizacion_stroop = {
     type: jsPsychHtmlKeyboardResponse,
     key_property_for_validation: "code",
@@ -672,14 +587,24 @@ function startJsPsychExperiment(participantData, showSection) {
       }, gVisibleStimul);
     },
     data: {
-      stroop_part: "stroop_automatizacion",
-      task: "response",
+      fase: function () {
+        return jsPsych.evaluateTimelineVariable("fase");
+      },
+      task: "Response",
       stimColor: function () {
         return getColorInfo(jsPsych.evaluateTimelineVariable("color")).name;
       },
       stimWord: function () {
         const word_val = jsPsych.evaluateTimelineVariable("word");
         return word_val === "0" ? "Circulo" : word_val;
+      },
+      ronda: function () {
+        if (!ronda_stroop) {
+          ronda_stroop = true;
+          return 1;
+        } else {
+          return 2;
+        }
       },
     },
     trial_duration: gTimeResponse,
@@ -688,7 +613,6 @@ function startJsPsychExperiment(participantData, showSection) {
     },
     on_finish: function (data) {
       data.test_part = jsPsych.evaluateTimelineVariable("test_part");
-      data.bloque_automatizacion_stroop = bloque_automatizacion_stroop;
 
       // Determinar la respuesta del color
       const responseKeyInfo = {
@@ -697,7 +621,7 @@ function startJsPsychExperiment(participantData, showSection) {
         Digit1: getColorInfo("amarilloStroop"),
       };
       data.colorResponse =
-        responseKeyInfo[data.response]?.name || "DESCONOCIDO";
+        responseKeyInfo[data.response]?.name || "Sin Respuesta";
 
       // Determinar la respuesta correcta
       const stimColorInfo = getColorInfo(
@@ -751,8 +675,10 @@ function startJsPsychExperiment(participantData, showSection) {
       }, gVisibleStimul);
     },
     data: {
-      stroop_part: "stroop_prueba",
-      task: "response",
+      fase: function () {
+        return jsPsych.evaluateTimelineVariable("fase");
+      },
+      task: "Response",
       stimColor: function () {
         return getColorInfo(jsPsych.evaluateTimelineVariable("color")).name;
       },
@@ -776,7 +702,7 @@ function startJsPsychExperiment(participantData, showSection) {
         Digit1: getColorInfo("amarilloStroop"),
       };
       data.colorResponse =
-        responseKeyInfo[data.response]?.name || "DESCONOCIDO";
+        responseKeyInfo[data.response]?.name || "Sin Respuesta";
 
       // Determinar la respuesta correcta
       const stimColorInfo = getColorInfo(
@@ -801,7 +727,7 @@ function startJsPsychExperiment(participantData, showSection) {
       bloque_automatizacion_stroop = (bloque_automatizacion_stroop || 0) + 1;
       const all_trials = data
         .values()
-        .filter((trial) => trial.task === "response");
+        .filter((trial) => trial.task === "Response");
 
       const correct_trials = all_trials.filter(
         (trial) => trial.correct === true
@@ -842,6 +768,7 @@ function startJsPsychExperiment(participantData, showSection) {
     timeline_variables: trialBaseStroopPractica,
     randomize_order: true,
   };
+
   const instruccion_practica_stroop = {
     type: jsPsychHtmlKeyboardResponse,
     key_property_for_validation: "code",
@@ -908,9 +835,11 @@ function startJsPsychExperiment(participantData, showSection) {
     choices: ["Space"],
   };
 
-  const trialbasegonogo = calcular_trialbase_gonogo(jsPsych, 60);
-  const trialpracticegonogo = calcular_trialbase_gonogo(jsPsych, 20);
+  const trialbasegonogo = generarTrialBaseGonogo(jsPsych, 60, "Prueba");
+  const trialpracticegonogo = generarTrialBaseGonogo(jsPsych, 20, "Practica");
+  let ronda_gonogo = false;
   console.log(trialpracticegonogo);
+  console.log(trialbasegonogo);
 
   const prueba_practica_gonogo = {
     type: jsPsychHtmlKeyboardResponse,
@@ -926,7 +855,7 @@ function startJsPsychExperiment(participantData, showSection) {
       cells[
         pos
       ] = `<div class="cell"><div id="star" class="star" style="display: none;">✸</div><div id="error" class="error" style="display: none;">X</div><div id="letter" class="letter">${letra}</div></div>`;
-      console.log(pos ,cells);
+      console.log(pos, cells);
       return `<div class="grid">${cells.join("")}</div>
       `;
     },
@@ -940,16 +869,27 @@ function startJsPsychExperiment(participantData, showSection) {
       }, gVisibleStimul);
     },
     data: {
-      task: "response", // Deja esto como 'response' para que se capture data.response, data.rt, etc.
+      task: "Response", // Deja esto como 'response' para que se capture data.response, data.rt, etc.
       go_nogo_type: function () {
         const letra = jsPsych.evaluateTimelineVariable("letter");
-        return letra === "P" ? "go" : "nogo";
+        return letra === "P" ? "Go" : "NoGo";
       },
       stim_letter: function () {
         return jsPsych.evaluateTimelineVariable("letter");
       },
       letter_pos: function () {
-        return jsPsych.evaluateTimelineVariable("gPos"); 
+        return jsPsych.evaluateTimelineVariable("gPos");
+      },
+      ronda: function () {
+        if (!ronda_gonogo) {
+          ronda_gonogo = true;
+          return 1;
+        } else {
+          return 2;
+        }
+      },
+      fase: function () {
+        return jsPsych.evaluateTimelineVariable("fase");
       },
     },
     trial_duration: gTimeResponse,
@@ -957,6 +897,7 @@ function startJsPsychExperiment(participantData, showSection) {
       stimulus: false,
     },
     on_finish: function (data) {
+      data.test_part = jsPsych.evaluateTimelineVariable("test_part");
       const current_letter = data.stim_letter;
       const participant_response = data.response; // Contiene 'Space' o null
       let correct = false;
@@ -979,9 +920,9 @@ function startJsPsychExperiment(participantData, showSection) {
   };
 
   const instruccion_test_gonogo = {
-      type: jsPsychHtmlKeyboardResponse,
-      key_property_for_validation: "code",
-      stimulus: `
+    type: jsPsychHtmlKeyboardResponse,
+    key_property_for_validation: "code",
+    stimulus: `
       <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
         <p>Ahora comenzarás la tarea de verdad.</p>
         <p>Recuerda, no se te indicará si cometes un error, así que debes estar muy atento.</p>
@@ -993,15 +934,14 @@ function startJsPsychExperiment(participantData, showSection) {
       <p><strong>Presiona espacio para continuar</strong></p>
 
       `,
-      choices: ["Space"],
-    };
+    choices: ["Space"],
+  };
   // Timeline para mostrar el feedback visual del error: grid con estrella tachada
   const gonogo_error_feedback = {
     type: jsPsychHtmlKeyboardResponse,
     stimulus: function () {
       const last_trial_data = jsPsych.data.get().last(1).values()[0];
       const pos = last_trial_data.letter_pos;
-
 
       // Creamos la grilla
       const cells = Array(4).fill(
@@ -1086,19 +1026,17 @@ function startJsPsychExperiment(participantData, showSection) {
     countdown_trial,
     break_45_seconds_trial,
     test_procedure_test_gonogo,
-    fullscreen_trial_exit,
+    fullscreen_trial_exit
   );
 
   jsPsych.run(timeline);
 }
 
-function calcular_trialbase_Simon() {
+function generarTrialBaseSimon(numTrials, type, jsPsych) {
   // 1. Selecciona el contenedor del experimento
   let contenedorVideo = document.getElementById("jspsych-display");
+  let gVideoWidth = window.innerWidth;
 
-  let gVideoWidth = window.innerWidth; // Valor por defecto
-
-  // 2. Si existe, toma el ancho real
   if (contenedorVideo) {
     gVideoWidth = contenedorVideo.offsetWidth;
     console.log("El ancho de jspsych-display es:", gVideoWidth);
@@ -1109,7 +1047,7 @@ function calcular_trialbase_Simon() {
     );
   }
 
-  // 3. Definir posiciones relativas al ancho
+  // 2. Definir posiciones relativas al ancho
   let positions = [0, 0];
   let percentages = [0.35, 0.7];
   let num = 0;
@@ -1122,27 +1060,88 @@ function calcular_trialbase_Simon() {
   }
 
   let stim = [1, 2]; // 1 = rojo, 2 = azul
-  let trialbase = [];
 
+  // 3. Generar todas las combinaciones posibles de posiciones × estímulos
+  let allCombinations = [];
   for (let i = 0; i < positions.length; i++) {
     for (let j = 0; j < stim.length; j++) {
-      trialbase.push({
+      allCombinations.push({
         xpos: positions[i],
         stim: stim[j],
-        test_part: "simon",
+        test_part: "Simon",
+        fase: type,
       });
     }
   }
 
-  // 4. Devolver un objeto con ambos valores
-  return {
-    ancho: gVideoWidth,
-    trialbase: trialbase,
-  };
+  // 4. Repetir o recortar combinaciones para alcanzar numTrials
+  let trialbase = [];
+  while (trialbase.length < numTrials) {
+    trialbase = trialbase.concat(
+      jsPsych.randomization.shuffle(allCombinations)
+    );
+  }
+  trialbase = trialbase.slice(0, numTrials);
+
+  // 5. Devolver solo la lista de trials
+  return trialbase;
 }
 
-function MezclarPalabrasStroop(words, colors, matchesOK, reps = 90, jsPsych) {
-  let congruencia = "Neutra";
+function generarTrialsStroopCompletos(numTrialsPorTipo, jsPsych, type) {
+  const words = ["ROJO", "AZUL", "AMARILLO"];
+  const colors = ["rojoStroop", "azulStroop", "amarilloStroop"];
+  const words_neutras = ["XXXXX", "XXXXX", "XXXXX"];
+
+  // Generar trials congruentes
+  const trialsCongruentes = generarTrialBaseStroop(
+    words,
+    colors,
+    true, // matchesOK = true para congruentes
+    numTrialsPorTipo,
+    jsPsych,
+    type
+  );
+
+  // Generar trials incongruentes
+  const trialsIncongruentes = generarTrialBaseStroop(
+    words,
+    colors,
+    false, // matchesOK = false para incongruentes
+    numTrialsPorTipo,
+    jsPsych,
+    type
+  );
+
+  // Generar trials neutras
+  const trialsNeutras = generarTrialBaseStroop(
+    words_neutras,
+    colors,
+    true, // matchesOK no importa para neutras, se usa para mantener la estructura
+    numTrialsPorTipo,
+    jsPsych,
+    type
+  );
+
+  // Combinar todos los trials y mezclarlos aleatoriamente
+  let allTrials = trialsCongruentes
+    .concat(trialsIncongruentes)
+    .concat(trialsNeutras);
+  allTrials = jsPsych.randomization.shuffle(allTrials);
+
+  return allTrials;
+}
+
+function generarTrialBaseStroop(words, colors, matchesOK, reps, jsPsych, type) {
+  let congruencia;
+
+  if (words.includes("XXXXX")) {
+    congruencia = "Neutra";
+  } else if (matchesOK) {
+    congruencia = "Congruente";
+  } else {
+    congruencia = "Incongruente";
+  }
+
   const allCombos = jsPsych.randomization.factorial(
     {
       word: [1, 2, 3],
@@ -1154,6 +1153,7 @@ function MezclarPalabrasStroop(words, colors, matchesOK, reps = 90, jsPsych) {
   const factors = allCombos.filter((c) =>
     matchesOK ? c.word === c.color : c.word !== c.color
   );
+
   // Lista total de estímulos
   let stimuli = [];
 
@@ -1165,76 +1165,23 @@ function MezclarPalabrasStroop(words, colors, matchesOK, reps = 90, jsPsych) {
 
   // Cortar a reps exactos
   stimuli = stimuli.slice(0, reps);
-  if (matchesOK && !words.includes("XXXXX")) {
-    congruencia = "Congruente";
-  } else if (!matchesOK && !words.includes("XXXXX")) {
-    congruencia = "Incongruente";
-  }
+
   const outlist = stimuli.map((item) => {
     return {
       word: words[item.word - 1],
       color: colors[item.color - 1],
       congruencia: congruencia,
-      test_part: "stroop",
+      test_part: "Stroop",
+      fase: type,
     };
   });
 
   return outlist;
 }
 
-function getColorInfo(colorClass) {
-  switch (colorClass) {
-    case "rojoStroop":
-      return { value: 3, name: "ROJO", key: "Digit3" };
-    case "azulStroop":
-      return { value: 2, name: "AZUL", key: "Digit2" };
-    case "amarilloStroop":
-      return { value: 1, name: "AMARILLO", key: "Digit1" };
-    default:
-      return { value: 0, name: "DESCONOCIDO", key: "" };
-  }
-}
-
-function getSimonTrialInfo(stimCode, xPos) {
-  const color = stimCode === 1 ? "azul" : "rojo";
-
-  let position;
-  if (xPos < 0) {
-    position = "izquierda";
-  } else if (xPos > 0) {
-    position = "derecha";
-  } else {
-    position = "neutro";
-  }
-
-  let congruence;
-  if (
-    (position === "izquierda" && stimCode === 1) || // Azul a la izquierda
-    (position === "derecha" && stimCode === 2) // Rojo a la derecha
-  ) {
-    congruence = "congruente";
-  } else if (position === "neutro") {
-    congruence = "neutra";
-  } else {
-    congruence = "incongruente";
-  }
-
-  // Define las respuestas correctas para simplificar el on_finish
-  const correctResponsesSimon = {
-    1: "ShiftLeft", // Para azul (stimCode 1)
-    2: "ShiftRight", // Para rojo (stimCode 2)
-  };
-
-  return {
-    color: color,
-    position: position,
-    congruence: congruence,
-    correctResponse: correctResponsesSimon[stimCode],
-  };
-}
-function calcular_trialbase_gonogo(jsPsych, totalTrials) {
+function generarTrialBaseGonogo(jsPsych, totalTrials, type) {
   // Calcular número de P (Go) y R (No-Go) con proporción 80/20
-  let numP = Math.round(totalTrials * 0.70);
+  let numP = Math.round(totalTrials * 0.7);
   let numR = totalTrials - numP;
 
   // Asegurarse de que la suma dé exactamente totalTrials
@@ -1248,10 +1195,20 @@ function calcular_trialbase_gonogo(jsPsych, totalTrials) {
     const design = [];
 
     for (let i = 0; i < numP; i++) {
-      design.push({ letter: "P", gPos: Math.floor(Math.random() * 4), test_part: "gonogo",});
+      design.push({
+        letter: "P",
+        gPos: Math.floor(Math.random() * 4),
+        test_part: "Go/NoGo",
+        fase: type,
+      });
     }
     for (let i = 0; i < numR; i++) {
-      design.push({ letter: "R", gPos: Math.floor(Math.random() * 4), test_part: "gonogo", });
+      design.push({
+        letter: "R",
+        gPos: Math.floor(Math.random() * 4),
+        test_part: "Go/NoGo",
+        fase: type,
+      });
     }
 
     return design;
@@ -1280,4 +1237,55 @@ function calcular_trialbase_gonogo(jsPsych, totalTrials) {
   console.log("Total de R (No-Go):", count.R);
 
   return fullDesign;
+}
+
+function getColorInfo(colorClass) {
+  switch (colorClass) {
+    case "rojoStroop":
+      return { value: 3, name: "Rojo", key: "Digit3" };
+    case "azulStroop":
+      return { value: 2, name: "Azul", key: "Digit2" };
+    case "amarilloStroop":
+      return { value: 1, name: "Amarillo", key: "Digit1" };
+    default:
+      return { value: 0, name: "Sin Respuesta", key: "" };
+  }
+}
+
+function getSimonTrialInfo(stimCode, xPos) {
+  const color = stimCode === 1 ? "Azul" : "Rojo";
+
+  let position;
+  if (xPos < 0) {
+    position = "Izquierda";
+  } else if (xPos > 0) {
+    position = "Derecha";
+  } else {
+    position = "Neutra";
+  }
+
+  let congruence;
+  if (
+    (position === "Izquierda" && stimCode === 1) || // Azul a la izquierda
+    (position === "Derecha" && stimCode === 2) // Rojo a la derecha
+  ) {
+    congruence = "Congruente";
+  } else if (position === "Neutra") {
+    congruence = "Neutra";
+  } else {
+    congruence = "Incongruente";
+  }
+
+  // Define las respuestas correctas para simplificar el on_finish
+  const correctResponsesSimon = {
+    1: "ShiftLeft", // Para azul (stimCode 1)
+    2: "ShiftRight", // Para rojo (stimCode 2)
+  };
+
+  return {
+    color: color,
+    position: position,
+    congruence: congruence,
+    correctResponse: correctResponsesSimon[stimCode],
+  };
 }
