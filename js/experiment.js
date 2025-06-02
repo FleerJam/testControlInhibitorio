@@ -326,7 +326,7 @@ function startJsPsychExperiment(
 
     const manos_simon = {
       type: jsPsychImageKeyboardResponse,
-      stimulus: '../img/SIMON_IMAGE.png',
+      stimulus: '../img/SIMON_IMAGE.PNG',
       trial_duration: 7000,
       choices: "NO_KEYS",
       stimulus_width: 750,
