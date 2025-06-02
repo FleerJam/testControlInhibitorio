@@ -326,7 +326,7 @@ function startJsPsychExperiment(
 
     const manos_simon = {
       type: jsPsychImageKeyboardResponse,
-      stimulus: 'img/SIMON_IMAGE.PNG',
+      stimulus: '../img/SIMON_IMAGE.png',
       trial_duration: 7000,
       choices: "NO_KEYS",
       stimulus_width: 750,
@@ -337,7 +337,7 @@ function startJsPsychExperiment(
     
     const manos_stroop = {
       type: jsPsychImageKeyboardResponse,
-      stimulus: 'img/STROOP_IMAGE.PNG',
+      stimulus: '../img/STROOP_IMAGE.PNG',
       trial_duration: 7000,
       choices: "NO_KEYS",
       stimulus_width: 750,
@@ -347,7 +347,7 @@ function startJsPsychExperiment(
     };
     const manos_gonogo = {
       type: jsPsychImageKeyboardResponse,
-      stimulus: 'img/GONOGO_IMAGE.PNG',
+      stimulus: '../img/GONOGO_IMAGE.PNG',
       trial_duration: 7000,
       choices: "NO_KEYS",
       stimulus_width: 750,
