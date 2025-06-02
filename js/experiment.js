@@ -68,6 +68,7 @@ function startJsPsychExperiment(participantData, showSection) {
     on_trial_finish: function (data) {
       if (data.task === "Response") {
         data.participantId = participantData.participantId;
+        data.groupId = participantData.groupId
       }
     },
   });
@@ -342,6 +343,7 @@ function startJsPsychExperiment(participantData, showSection) {
   ///////////////////////////
 
   // Variables SIMON
+  let ronda_simon = 0;
   const trialbaseSimonPractica = generarTrialBaseSimon(12, "Practica", jsPsych);
   const trialBaseSimon = generarTrialBaseSimon(60, "Prueba", jsPsych);
 
@@ -434,6 +436,9 @@ function startJsPsychExperiment(participantData, showSection) {
       fase: function () {
         return jsPsych.evaluateTimelineVariable("fase");
       },
+      ronda: function () {
+        return ronda_simon;
+      },
     },
     trial_duration: gTimeResponse,
     on_finish: function (data) {
@@ -467,10 +472,22 @@ function startJsPsychExperiment(participantData, showSection) {
     randomize_order: true,
   };
 
-  const test_procedure_simon = {
+  const first_round_simon = {
     timeline: [fixation, prueba_simons],
     timeline_variables: trialBaseSimon,
     randomize_order: true,
+    on_start: function () {
+      ronda_simon = 1; // Asigna directamente 2 para la segunda ronda
+    },
+  };
+
+  const second_round_simon = {
+    timeline: [fixation, prueba_simons],
+    timeline_variables: trialBaseSimon,
+    randomize_order: true,
+    on_start: function () {
+      ronda_simon = 2; // Asigna directamente 2 para la segunda ronda
+    },
   };
 
   ///////////////////////////
@@ -553,7 +570,7 @@ function startJsPsychExperiment(participantData, showSection) {
     },
   };
 
-  let ronda_stroop = false;
+  let ronda_stroop = 0;
 
   const automatizacion_stroop = {
     type: jsPsychHtmlKeyboardResponse,
@@ -590,20 +607,13 @@ function startJsPsychExperiment(participantData, showSection) {
         const word_val = jsPsych.evaluateTimelineVariable("word");
         return word_val === "0" ? "Circulo" : word_val;
       },
-      ronda: function () {
-        if (!ronda_stroop) {
-          ronda_stroop = true;
-          return 1;
-        } else {
-          return 2;
-        }
-      },
     },
     trial_duration: gTimeResponse,
     save_trial_parameters: {
       stimulus: false,
     },
     on_finish: function (data) {
+      data.bloque = bloque_automatizacion_stroop;
       data.test_part = jsPsych.evaluateTimelineVariable("test_part");
 
       // Determinar la respuesta del color
@@ -657,6 +667,9 @@ function startJsPsychExperiment(participantData, showSection) {
       }, gVisibleStimul);
     },
     data: {
+      ronda: function () {
+        return ronda_stroop;
+      },
       fase: function () {
         return jsPsych.evaluateTimelineVariable("fase");
       },
@@ -675,7 +688,6 @@ function startJsPsychExperiment(participantData, showSection) {
     },
     on_finish: function (data) {
       data.test_part = jsPsych.evaluateTimelineVariable("test_part");
-      data.bloque_automatizacion_stroop = bloque_automatizacion_stroop;
 
       // Determinar la respuesta del color
       const responseKeyInfo = {
@@ -738,10 +750,22 @@ function startJsPsychExperiment(participantData, showSection) {
     },
   };
 
-  const test_procedure_stroop = {
+  const first_round_stroop = {
     timeline: [fixation, prueba_stroop],
     timeline_variables: trialBaseStroop,
     randomize_order: true,
+    on_start: function () {
+      ronda_stroop = 1; // Asigna directamente 2 para la segunda ronda
+    },
+  };
+
+  const second_round_stroop = {
+    timeline: [fixation, prueba_stroop],
+    timeline_variables: trialBaseStroop,
+    randomize_order: true,
+    on_start: function () {
+      ronda_stroop = 2; // Asigna directamente 2 para la segunda ronda
+    },
   };
 
   const test_practica_stroop = {
@@ -792,6 +816,13 @@ function startJsPsychExperiment(participantData, showSection) {
   ///////////////////////////////
   ////////////////GONOGO
   //////////////////////////////
+  const trialbasegonogo = generarTrialBaseGonogo(jsPsych, 60, "Prueba");
+  const trialpracticegonogo = generarTrialBaseGonogo(jsPsych, 20, "Practica");
+
+  console.log(trialpracticegonogo);
+  console.log(trialbasegonogo);
+
+  let ronda_actual_gonogo = 0;
 
   const instruccion_practica_gonogo = {
     type: jsPsychHtmlKeyboardResponse,
@@ -816,13 +847,7 @@ function startJsPsychExperiment(participantData, showSection) {
     choices: ["Space"],
   };
 
-  const trialbasegonogo = generarTrialBaseGonogo(jsPsych, 60, "Prueba");
-  const trialpracticegonogo = generarTrialBaseGonogo(jsPsych, 20, "Practica");
-  let ronda_gonogo = false;
-  console.log(trialpracticegonogo);
-  console.log(trialbasegonogo);
-
-  const prueba_practica_gonogo = {
+  const go_nogo_trial_block = {
     type: jsPsychHtmlKeyboardResponse,
     key_property_for_validation: "code",
     stimulus: function () {
@@ -847,7 +872,8 @@ function startJsPsychExperiment(participantData, showSection) {
         const al = document.getElementById("star");
         if (al) al.style.display = "block";
       }, gVisibleStimul);
-    },response_ends_trial: false,
+    },
+    response_ends_trial: false,
     data: {
       task: "Response", // Deja esto como 'response' para que se capture data.response, data.rt, etc.
       go_nogo_type: function () {
@@ -861,18 +887,13 @@ function startJsPsychExperiment(participantData, showSection) {
         return jsPsych.evaluateTimelineVariable("gPos");
       },
       ronda: function () {
-        if (!ronda_gonogo) {
-          ronda_gonogo = true;
-          return 1;
-        } else {
-          return 2;
-        }
+        return ronda_actual_gonogo; // Asigna el valor actual de la ronda
       },
       fase: function () {
         return jsPsych.evaluateTimelineVariable("fase");
       },
     },
-    trial_duration: gTimeResponse-50,
+    trial_duration: gTimeResponse - 50,
     save_trial_parameters: {
       stimulus: false,
     },
@@ -958,15 +979,31 @@ function startJsPsychExperiment(participantData, showSection) {
   };
 
   const test_procedure_practice_gonogo = {
-    timeline: [prueba_practica_gonogo, gonogo_feedback_node],
+    timeline: [go_nogo_trial_block, gonogo_feedback_node],
     timeline_variables: trialpracticegonogo,
     randomize_order: true,
   };
 
-  const test_procedure_test_gonogo = {
-    timeline: [prueba_practica_gonogo],
+  const first_round_go_nogo = {
+    timeline: [go_nogo_trial_block],
+    on_start: function () {
+      ronda_actual_gonogo = 1; // Asigna directamente 1 para la primera ronda
+    },
     timeline_variables: trialbasegonogo,
     randomize_order: true,
+  };
+
+  const second_round_go_nogo = {
+    timeline: [go_nogo_trial_block],
+    on_start: function () {
+      ronda_actual_gonogo = 2; // Asigna directamente 2 para la segunda ronda
+    },
+    timeline_variables: trialbasegonogo,
+    randomize_order: true,
+  };
+
+  const inter_round_break_and_countdown = {
+    timeline: [break_45_seconds_trial, countdown_trial],
   };
 
   timeline.push(
@@ -976,10 +1013,9 @@ function startJsPsychExperiment(participantData, showSection) {
     test_procedure_practica_simon,
     //instruccion_test_simon,
     countdown_trial,
-    test_procedure_simon,
-    //break_45_seconds_trial,
-    countdown_trial,
-    test_procedure_simon,
+    first_round_simon,
+    //inter_round_break_and_countdown,
+    second_round_simon,
     //break_60_seconds_trial,
     //practica_colores,
     countdown_trial,
@@ -990,20 +1026,18 @@ function startJsPsychExperiment(participantData, showSection) {
     test_practica_stroop,
     //instruccion_stroop,
     countdown_trial,
-    test_procedure_stroop,
-    //break_45_seconds_trial,
-    countdown_trial,
-    test_procedure_stroop,
+    first_round_stroop,
+    //inter_round_break_and_countdown
+    second_round_stroop,
     //break_60_seconds_trial,
     //instruccion_practica_gonogo,
     countdown_trial,
     test_procedure_practice_gonogo,
     //instruccion_test_gonogo,
     countdown_trial,
-    test_procedure_test_gonogo,
-    //break_45_seconds_trial,
-    countdown_trial,
-    test_procedure_test_gonogo,
+    first_round_go_nogo,
+    inter_round_break_and_countdown,
+    second_round_go_nogo
     //fullscreen_trial_exit
   );
 

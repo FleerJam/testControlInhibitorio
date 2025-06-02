@@ -1,13 +1,13 @@
-
-// Reemplaza esto con tu configuración de Firebase
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_PROYECTO.firebaseapp.com",
-  projectId: "TU_PROYECTO",
-  storageBucket: "TU_PROYECTO.appspot.com",
-  messagingSenderId: "NUMERO",
-  appId: "TU_APP_ID"
+  apiKey: "AIzaSyBBD3Dw_h9xYkXRMAGbDIOF-VEfnMD8qjg",
+  authDomain: "controlinhibitoriuide2025.firebaseapp.com",
+  databaseURL: "https://controlinhibitoriuide2025-default-rtdb.firebaseio.com",
+  projectId: "controlinhibitoriuide2025",
+  storageBucket: "controlinhibitoriuide2025.firebasestorage.app",
+  messagingSenderId: "132857538161",
+  appId: "1:132857538161:web:1739a16004ea526ed61dd0"
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+// Exporta la configuración para que pueda ser importada en otros archivos
+export { firebaseConfig };
