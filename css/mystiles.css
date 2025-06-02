@@ -90,17 +90,17 @@ hr {
 }
 
 .amarilloStroop {
-  background-color: rgb(255, 190, 60);
+  color: rgb(255, 174, 12);
 }
 .azulStroop {
-  background-color: rgb(65, 105, 225);
+  color: rgb(65, 105, 225);
 }
 .rojoStroop {
-  background-color: rgb(220, 20, 60);
+  color: rgb(220, 20, 60);
 }
 
 .circle.amarilloStroop {
-  background-color: rgb(255, 190, 60);
+  background-color: rgb(255, 174, 12);
 }
 .circle.azulStroop {
   background-color: rgb(65, 105, 225);
@@ -111,7 +111,7 @@ hr {
 
 .response-option-left,
 .response-option-right {
-  font-size: 24px;
+  font-size: 25px;
   font-weight: bold;
   display: inline-block; /* Opcional si ya usas flexbox */
 }
@@ -138,13 +138,26 @@ hr {
 }
 
 .response-option {
-  font-size: 20px;
+  font-size: 25px;
   /* Otros estilos generales para las opciones */
 }
 
 .response-instructions {
   position: absolute;
   bottom: 30px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: space-around; /* O space-between, space-evenly */
+  align-items: center;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+
+.response-instruction-gonogo {
+  position: absolute;
+  top: 30px;
   left: 0;
   width: 100%;
   display: flex;
@@ -221,6 +234,9 @@ hr {
 }
 /* Esto asegura que el mensaje de fin se vea bien */
 #completion-message {
+    width: 100vw; /* Asegura que ocupe todo el ancho del viewport */
+  height: 100vh; /* Asegura que ocupe toda la altura del viewport */
+  background-color: #cccccc;
   display: flex;
   flex-direction: column;
   justify-content: center;

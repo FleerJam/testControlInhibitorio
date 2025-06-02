@@ -2,7 +2,6 @@ function startJsPsychExperiment(participantData, showSection) {
   let jsPsych = initJsPsych({
     display_element: "jspsych-display",
     on_finish: function () {
-      document.getElementById("container").style.display = "block";
       showSection(document.getElementById("completion-message"));
       // Obtiene todos los datos registrados por jsPsych
       const allData = jsPsych.data.get();
@@ -40,8 +39,8 @@ function startJsPsychExperiment(participantData, showSection) {
       const gonogoResponses = allData
         .filter({
           task: "Response",
-          test_part: "Simon",
-          stroop_part: "Prueba",
+          test_part: "Go/NoGo",
+          fase: "Prueba",
         })
         .values();
 
@@ -101,8 +100,13 @@ function startJsPsychExperiment(participantData, showSection) {
 
   const footer_simon = `
         <div class="response-instructions">
-          <span class="response-option-left">SHIFT izquierda Azul</span>
-          <span class="response-option-right">SHIFT derecha Rojo</span>
+          <span class="response-option-left">SHIFT Izquierda Azul</span>
+          <span class="response-option-right">SHIFT Derecha Rojo</span>
+        </div>
+  `;
+  const footer_gonogo = `
+        <div class="response-instruction-gonogo">
+          <span class="response-option">Presiona la barra espaciadora cuando aparezca una P</span>
         </div>
   `;
 
@@ -348,7 +352,7 @@ function startJsPsychExperiment(participantData, showSection) {
     key_property_for_validation: "code",
     stimulus: `
     <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
-      <p>
+
       Estás a punto de participar en un estudio donde se te mostrará uno de dos estímulos:
       <strong>un círculo rojo o un círculo azul</strong>.<br><br>
       El círculo aparecerá en distintas posiciones (a la izquierda o a la derecha de la pantalla),
@@ -357,25 +361,25 @@ function startJsPsychExperiment(participantData, showSection) {
       &nbsp;&nbsp;&nbsp;&nbsp;&rarr; Si ves un círculo <strong>azul</strong>, presiona la tecla <strong>SHIFT izquierda</strong>.<br>
       &nbsp;&nbsp;&nbsp;&nbsp;&rarr; Si ves un círculo <strong>rojo</strong>, presiona la tecla <strong>SHIFT derecha</strong>.
     
-      <br>
+      <br><br>
     <p>Vas a comenzar con unos ensayos de practica en los que se te dara una retroalimentacion, para que te familiarizes con la tarea</p>
     </div>
 
     <br>
 
-    <div style='display: flex; justify-content: space-around; margin-top: 20px;'>
+    <div style='display: flex; justify-content: space-around; margin-top: 20px; font-size: 20px;'>
         <div style='text-align: center;'>
           <div class="circle azul"></div>
-          <p><strong>SHIFT izquierda</strong></p>
+          <p class="response-option-left"><strong>SHIFT Izquierda</strong></p>
         </div>
         <div>
           <div class="circle rojo"></div>
-          <p><strong>SHIFT derecha</strong></p>
+          <p class="response-option-right"><strong>SHIFT Derecha</strong></p>
         </div>
     </div>
 
     <br><br>
-    <p><strong>Presiona espacio para continuar</strong></p>
+    <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
 
     `,
     choices: ["Space"],
@@ -386,16 +390,15 @@ function startJsPsychExperiment(participantData, showSection) {
     key_property_for_validation: "code",
     stimulus: `
     <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
-      <p><strong>Ahora comenzarás la tarea de verdad.</strong></p>
-      <p>Recuerda, no se te indicará si cometes un error, así que debes estar muy atento.</p>
-      <p>
-      No olvides:<br>
+      <strong>Ahora comenzarás la tarea de verdad.</strong>
+      <br><br>
+      Recuerda, no se te indicará si cometes un error, así que debes estar muy atento.
+      No olvides:<br><br>
         &rarr; Si ves un círculo <strong>rojo</strong>, presiona la tecla <strong>SHIFT izquierda</strong>.<br>
         &rarr; Si ves un círculo <strong>azul</strong>, presiona la tecla <strong>SHIFT derecha</strong>.
-      </p>
     </div>
     <br><br>
-    <p style='text-align: center; font-size: 18px;'><strong>Presiona espacio para comenzar</strong></p>
+    <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
     `,
     choices: ["Space"],
   };
@@ -415,10 +418,8 @@ function startJsPsychExperiment(participantData, showSection) {
           </div>
         </div>
 
-        <div class="response-instructions">
-          <span class="response-option-left">SHIFT izquierda Azul</span>
-          <span class="response-option-right">SHIFT derecha Rojo</span>
-        </div>
+        
+      ${footer_simon}
       `;
     },
     choices: ["ShiftLeft", "ShiftRight"],
@@ -513,7 +514,7 @@ function startJsPsychExperiment(participantData, showSection) {
     stimulus: function () {
       return `
     <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
-      <p><strong>Esta es una fase de práctica importante.</strong></p>
+      <p><strong>Esta es una fase de automatizacion importante.</strong></p>
       <p>Verás círculos de colores y debes presionar la tecla según el color:</p>
         <p>1 → Amarillo | 2 → Azul | 3 → Rojo</p>
 
@@ -521,8 +522,9 @@ function startJsPsychExperiment(participantData, showSection) {
 
         <p>Practica libremente con las teclas para verificar los colores.</p>
         <p>Luego harás bloques donde deberás mantener buena precisión y velocidad, si te sientes ya listo.</p>
-        <p style="margin-top: 20px;"><strong>Presiona espacio para comenzar.</strong></p>
       </div>
+      <br><br>
+      <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
     `;
     },
     choices: ["Digit1", "Digit2", "Digit3", "Space"],
@@ -566,17 +568,7 @@ function startJsPsychExperiment(participantData, showSection) {
         </div>
       </div>
 
-      <div class="response-options-container">
-              <span class="amarilloStroop response-option">
-                [1] AMARILLO
-              </span>
-              <span class="azulStroop response-option">
-                [2] AZUL
-              </span>
-              <span class="rojoStroop response-option">
-                [3] ROJO
-              </span>
-        </div>
+      ${footer_stroop}
       `;
     },
     choices: ["Digit1", "Digit2", "Digit3"],
@@ -654,17 +646,7 @@ function startJsPsychExperiment(participantData, showSection) {
         <p id="word-stroop" class="${color_class}" style="font-size: 80px; font-weight: bold; position: absolute;">${word}</p>
       </div>
 
-      <div class="response-options-container">
-              <span class="amarilloStroop response-option">
-                [1] AMARILLO
-              </span>
-              <span class="azulStroop response-option">
-                [2] AZUL
-              </span>
-              <span class="rojoStroop response-option">
-                [3] ROJO
-              </span>
-        </div>
+      ${footer_stroop}
       `;
     },
     choices: ["Digit1", "Digit2", "Digit3", "Space"],
@@ -721,10 +703,6 @@ function startJsPsychExperiment(participantData, showSection) {
   const fase_automatizacion = {
     timeline: [test_automatizacion_stroop],
     loop_function: function (data) {
-      if (bloque_automatizacion_stroop === 5) {
-        return false;
-      }
-      bloque_automatizacion_stroop = (bloque_automatizacion_stroop || 0) + 1;
       const all_trials = data
         .values()
         .filter((trial) => trial.task === "Response");
@@ -744,14 +722,17 @@ function startJsPsychExperiment(participantData, showSection) {
 
       console.log(
         "Bloque [",
-        bloque_automatizacion_stroop - 1,
+        bloque_automatizacion_stroop,
         "] Correctas:",
         correct_trials.length,
         "RT promedio:",
         rt_avg
       );
       console.log("Bloques consecutivos exitosos:", automatizacionRespCorr);
-
+      if (bloque_automatizacion_stroop === 5) {
+        return false;
+      }
+      bloque_automatizacion_stroop = (bloque_automatizacion_stroop || 0) + 1;
       // Terminar el bucle si se han completado 2 bloques consecutivos exitosos
       return !(automatizacionRespCorr >= 2);
     },
@@ -786,7 +767,7 @@ function startJsPsychExperiment(participantData, showSection) {
     </div>
 
     <br><br>
-    <p><strong>Presiona espacio para continuar</strong></p>
+      <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
 
     `,
     choices: ["Space"],
@@ -803,7 +784,7 @@ function startJsPsychExperiment(participantData, showSection) {
         </div>
 
     <br><br>
-    <p><strong>Presiona espacio para continuar</strong></p>
+      <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
 
     `,
     choices: ["Space"],
@@ -829,7 +810,7 @@ function startJsPsychExperiment(participantData, showSection) {
     </div>
 
     <br><br>
-    <p><strong>Presiona espacio para continuar</strong></p>
+      <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
 
     `,
     choices: ["Space"],
@@ -855,8 +836,7 @@ function startJsPsychExperiment(participantData, showSection) {
       cells[
         pos
       ] = `<div class="cell"><div id="star" class="star" style="display: none;">✸</div><div id="error" class="error" style="display: none;">X</div><div id="letter" class="letter">${letra}</div></div>`;
-      console.log(pos, cells);
-      return `<div class="grid">${cells.join("")}</div>
+      return `<div class="grid">${cells.join("")}</div>${footer_gonogo}
       `;
     },
     choices: ["Space"],
@@ -867,7 +847,7 @@ function startJsPsychExperiment(participantData, showSection) {
         const al = document.getElementById("star");
         if (al) al.style.display = "block";
       }, gVisibleStimul);
-    },
+    },response_ends_trial: false,
     data: {
       task: "Response", // Deja esto como 'response' para que se capture data.response, data.rt, etc.
       go_nogo_type: function () {
@@ -892,7 +872,7 @@ function startJsPsychExperiment(participantData, showSection) {
         return jsPsych.evaluateTimelineVariable("fase");
       },
     },
-    trial_duration: gTimeResponse,
+    trial_duration: gTimeResponse-50,
     save_trial_parameters: {
       stimulus: false,
     },
@@ -931,7 +911,7 @@ function startJsPsychExperiment(participantData, showSection) {
       </div>
 
       <br><br>
-      <p><strong>Presiona espacio para continuar</strong></p>
+      <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
 
       `,
     choices: ["Space"],
@@ -954,8 +934,7 @@ function startJsPsychExperiment(participantData, showSection) {
           <div id="star" class="star">✸</div>
           <div id="error" class="error">☓</div>
         </div>`;
-      console.log("Error cometido ", pos, cells);
-      return `<div class="grid">${cells.join("")}</div>`;
+      return `<div class="grid">${cells.join("")}</div>${footer_gonogo}`;
     },
     choices: "NO_KEYS",
     trial_duration: gTimeFeedbaak + 500,
@@ -974,7 +953,6 @@ function startJsPsychExperiment(participantData, showSection) {
     timeline: [gonogo_error_feedback],
     conditional_function: function () {
       const last_trial = jsPsych.data.get().last(1).values()[0];
-      console.log(last_trial.correct);
       return !last_trial.correct; // Solo mostrar si no fue correcto
     },
   };
@@ -986,47 +964,47 @@ function startJsPsychExperiment(participantData, showSection) {
   };
 
   const test_procedure_test_gonogo = {
-    timeline: [prueba_practica_gonogo, gonogo_feedback_node],
+    timeline: [prueba_practica_gonogo],
     timeline_variables: trialbasegonogo,
     randomize_order: true,
   };
 
   timeline.push(
-    fullscreen_trial,
-    instruccion_practica_simon,
+    //fullscreen_trial,
+    //instruccion_practica_simon,
     countdown_trial,
     test_procedure_practica_simon,
-    instruccion_test_simon,
+    //instruccion_test_simon,
     countdown_trial,
     test_procedure_simon,
-    break_45_seconds_trial,
+    //break_45_seconds_trial,
     countdown_trial,
     test_procedure_simon,
-    break_60_seconds_trial,
-    practica_colores,
+    //break_60_seconds_trial,
+    //practica_colores,
     countdown_trial,
     fase_automatizacion,
-    break_after_automation_trial,
-    instruccion_practica_stroop,
+    //break_after_automation_trial,
+    //instruccion_practica_stroop,
     countdown_trial,
     test_practica_stroop,
-    instruccion_stroop,
+    //instruccion_stroop,
     countdown_trial,
     test_procedure_stroop,
-    break_45_seconds_trial,
+    //break_45_seconds_trial,
     countdown_trial,
     test_procedure_stroop,
-    break_60_seconds_trial,
-    instruccion_practica_gonogo,
+    //break_60_seconds_trial,
+    //instruccion_practica_gonogo,
     countdown_trial,
     test_procedure_practice_gonogo,
-    instruccion_test_gonogo,
+    //instruccion_test_gonogo,
     countdown_trial,
     test_procedure_test_gonogo,
+    //break_45_seconds_trial,
     countdown_trial,
-    break_45_seconds_trial,
     test_procedure_test_gonogo,
-    fullscreen_trial_exit
+    //fullscreen_trial_exit
   );
 
   jsPsych.run(timeline);
