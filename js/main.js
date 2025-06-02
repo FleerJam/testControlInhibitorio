@@ -7,13 +7,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.8.0/firebas
 // Importa la configuración de Firebase desde tu archivo local
 import { firebaseConfig } from './firebase-config.js';
 
-// Si habilitaste Analytics en tu proyecto, añade el SDK de Firebase para Google Analytics
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-analytics.js";
-
-// Añade los productos de Firebase que quieras usar
-import { getAuth } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-firestore.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/11.8.0/firebase-database.js"; // Para Realtime Database
+import { getDatabase, ref, push, set} from "https://www.gstatic.com/firebasejs/11.8.0/firebase-database.js"; // Para Realtime Database
 
 // Inicializa Firebase
 const app = initializeApp(firebaseConfig);
@@ -162,7 +156,7 @@ document.addEventListener("DOMContentLoaded", async () => { // Usamos 'async' pa
         } catch (error) {
             console.error("Error al guardar datos sociodemográficos en Firebase:", error);
             alert("Hubo un error al guardar tus datos. Por favor, inténtalo de nuevo.");
-            return; // Detener el proceso si hay un error al guardar
+            return;
         }
 
 

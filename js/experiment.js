@@ -83,21 +83,21 @@ function startJsPsychExperiment(participantData, showSection) {
   const NO_DATA_MESSAGE =
     "<p style='font-size: 40px; color: gray;'>Esperando información...</p>";
 
-  /*const gTimeResponse = 1400;
+  const gTimeResponse = 1400;
   const gVisibleStimul = 600;
   const gVisibleFixation = 400;
   const gTimeFeedbaak = 500;
   const gTimeFixation = function () {
     return jsPsych.randomization.sampleWithoutReplacement([600, 700], 1)[0];
-  };*/
+  };
 
-  const gTimeResponse = 0;
+  /*const gTimeResponse = 0;
   const gVisibleStimul = 0;
   const gVisibleFixation = 0;
   const gTimeFeedbaak = 0;
   const gTimeFixation = function () {
     return jsPsych.randomization.sampleWithoutReplacement([0, 0], 1)[0];
-  };
+  };*/
 
   const footer_simon = `
         <div class="response-instructions">
