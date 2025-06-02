@@ -1168,7 +1168,7 @@ function startJsPsychExperiment(
     );
   } else if (initialProgressStage === "stroop_completed") {
     timeline.push(
-      //fullscreen_trial,
+      fullscreen_trial,
       gonogo_block_completo,
       fullscreen_trial_exit
     );
