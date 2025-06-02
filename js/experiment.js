@@ -314,9 +314,47 @@ function startJsPsychExperiment(
       }, 1000);
     },
   };
+  var preload = {
+    type: jsPsychPreload,
+    auto_preload: true
+  };
+
+
   ///////////////////////////
   ///////SIMON///////////////
   ///////////////////////////
+
+    const manos_simon = {
+      type: jsPsychImageKeyboardResponse,
+      stimulus: 'img/SIMON_IMAGE.PNG',
+      trial_duration: 7000,
+      choices: "NO_KEYS",
+      stimulus_width: 750,
+      prompt: '<p style="left: 0; width: 100%; font-size: 40px;font-weight: bold;" >Coloca tus manos de esta manera</p>',
+      maintain_aspect_ratio: true,
+      //render_on_canvas: false 
+    };
+    
+    const manos_stroop = {
+      type: jsPsychImageKeyboardResponse,
+      stimulus: 'img/STROOP_IMAGE.PNG',
+      trial_duration: 7000,
+      choices: "NO_KEYS",
+      stimulus_width: 750,
+      prompt: '<p style="left: 0; width: 100%; font-size: 40px;font-weight: bold;" >Coloca tus manos de esta manera</p>',
+      maintain_aspect_ratio: true,
+      //render_on_canvas: false 
+    };
+    const manos_gonogo = {
+      type: jsPsychImageKeyboardResponse,
+      stimulus: 'img/GONOGO_IMAGE.PNG',
+      trial_duration: 7000,
+      choices: "NO_KEYS",
+      stimulus_width: 750,
+      prompt: '<p style="left: 0; width: 100%; font-size: 40px;font-weight: bold;" >Coloca tus manos de esta manera</p>',
+      maintain_aspect_ratio: true,
+      //render_on_canvas: false 
+    };
 
   // Variables SIMON
   let ronda_simon = 0;
@@ -1102,6 +1140,7 @@ function startJsPsychExperiment(
   const simon_block_completo = {
     timeline: [
       instruccion_practica_simon,
+      manos_simon,
       countdown_trial,
       test_procedure_practica_simon,
       instruccion_test_simon,
@@ -1117,6 +1156,7 @@ function startJsPsychExperiment(
   const stroop_block_completo = {
     timeline: [
       practica_colores,
+      manos_stroop,
       countdown_trial,
       fase_automatizacion,
       break_after_automation_trial,
@@ -1136,6 +1176,7 @@ function startJsPsychExperiment(
   const gonogo_block_completo = {
     timeline: [
       instruccion_practica_gonogo,
+      manos_gonogo,
       countdown_trial,
       test_procedure_practice_gonogo,
       instruccion_test_gonogo,
@@ -1168,7 +1209,7 @@ function startJsPsychExperiment(
     );
   } else if (initialProgressStage === "stroop_completed") {
     timeline.push(
-      //fullscreen_trial,
+      fullscreen_trial,
       gonogo_block_completo,
       fullscreen_trial_exit
     );
