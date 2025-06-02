@@ -375,8 +375,8 @@ function startJsPsychExperiment(
       <br><br>
       Recuerda, no se te indicará si cometes un error, así que debes estar muy atento.
       No olvides:<br><br>
-        &rarr; Si ves un círculo <strong>rojo</strong>, presiona la tecla <strong>SHIFT izquierda</strong>.<br>
-        &rarr; Si ves un círculo <strong>azul</strong>, presiona la tecla <strong>SHIFT derecha</strong>.
+      &nbsp;&nbsp;&nbsp;&rarr; Si ves un círculo <strong>azul</strong>, presiona la tecla <strong>SHIFT izquierda</strong>.<br>
+      &nbsp;&nbsp;&nbsp;&rarr; Si ves un círculo <strong>rojo</strong>, presiona la tecla <strong>SHIFT derecha</strong>.
     </div>
     <br><br>
     <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
