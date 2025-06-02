@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       
       // Intentar cargar datos existentes del participante desde Firebase
       try {
-        const participantRef = ref(realtimeDb, `participants/${participantId}`);
+        const participantRef = ref(realtimeDb, `participants/${groupId}/${participantId}`);
         const snapshot = await get(participantRef);
         if (snapshot.exists()) {
           participantDataFromDb = snapshot.val();
