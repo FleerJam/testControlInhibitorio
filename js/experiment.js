@@ -69,12 +69,12 @@ function startJsPsychExperiment(participantData, showSection) {
   const NO_DATA_MESSAGE =
     "<p style='font-size: 40px; color: gray;'>Esperando información...</p>";
 
-  const gTimeResponse = 1400;
-  const gVisibleStimul = 300;
-  const gVisibleFixation = 500;
+  const gTimeResponse = 1400000;
+  const gVisibleStimul = 600;
+  const gVisibleFixation = 400;
   const gTimeFeedbaak = 500;
   const gTimeFixation = function () {
-    return jsPsych.randomization.sampleWithoutReplacement([200, 300], 1)[0];
+    return jsPsych.randomization.sampleWithoutReplacement([600, 700], 1)[0];
   };
 
   const footer_simon = `
@@ -338,7 +338,7 @@ function startJsPsychExperiment(participantData, showSection) {
     type: jsPsychHtmlKeyboardResponse,
     key_property_for_validation: "code",
     stimulus: `
-    <div class='text-left'>
+    <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
       <p>
       Estás a punto de participar en un estudio donde se te mostrará uno de dos estímulos:
       <strong>un círculo rojo o un círculo azul</strong>.<br><br>
@@ -370,14 +370,13 @@ function startJsPsychExperiment(participantData, showSection) {
 
     `,
     choices: ["Space"],
-    post_trial_gap: 500,
   };
 
-  const instruccion_real_simon = {
+  const instruccion_test_simon = {
     type: jsPsychHtmlKeyboardResponse,
     key_property_for_validation: "code",
     stimulus: `
-    <div style='text-align: left; font-size: 20px; max-width: 700px; margin: auto; line-height: 1.6;'>
+    <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
       <p><strong>Ahora comenzarás la tarea de verdad.</strong></p>
       <p>Recuerda, no se te indicará si cometes un error, así que debes estar muy atento.</p>
       <p>
@@ -390,7 +389,6 @@ function startJsPsychExperiment(participantData, showSection) {
     <p style='text-align: center; font-size: 18px;'><strong>Presiona espacio para comenzar</strong></p>
     `,
     choices: ["Space"],
-    post_trial_gap: 500,
   };
 
   const prueba_simons = {
@@ -457,7 +455,7 @@ function startJsPsychExperiment(participantData, showSection) {
     },
   };
 
-  const test_procedure_practice_simon = {
+  const test_procedure_practica_simon = {
     timeline: [fixation, prueba_simons, feedback],
     timeline_variables: trialbaseSimonPractica,
     randomize_order: true,
@@ -601,7 +599,7 @@ function startJsPsychExperiment(participantData, showSection) {
     key_property_for_validation: "code", // Asegura que la propiedad 'code' de la respuesta sea usada para la validación
     stimulus: function () {
       return `
-      <div style="text-align: center; font-size: 18px; max-width: 700px; margin: auto;">
+    <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
       <p><strong>Esta es una fase de práctica importante.</strong></p>
       <p>Verás círculos de colores y debes presionar la tecla según el color:</p>
         <p>1 → Amarillo | 2 → Azul | 3 → Rojo</p>
@@ -618,17 +616,17 @@ function startJsPsychExperiment(participantData, showSection) {
     on_finish: function (data) {
       const key = data.response;
       if (key === "Digit1") {
-        currentColor = "rgb(255,195,0)";
+        currentColor = "rgb(255, 190, 60)";
       } else if (key === "Digit2") {
-        currentColor = "rgb(41,70,255)";
+        currentColor = "rgb(65, 105, 225)";
       } else if (key === "Digit3") {
-        currentColor = "rgb(180,0,50);";
+        currentColor = "rgb(220, 20, 60)";
       }
       data.practice_key_pressed = key;
     },
   };
 
-  const loop_practica_colores = {
+  const practica_colores = {
     timeline: [practica_color_dinamico_con_bucle],
     loop_function: function (data) {
       const lastResponse = data.values()[0].practice_key_pressed;
@@ -794,7 +792,7 @@ function startJsPsychExperiment(participantData, showSection) {
     },
   };
 
-  const loop_automatizacion = {
+  const fase_automatizacion = {
     timeline: [test_automatizacion_stroop],
     loop_function: function (data) {
       if (bloque_automatizacion_stroop === 5) {
@@ -839,39 +837,38 @@ function startJsPsychExperiment(participantData, showSection) {
     randomize_order: true,
   };
 
-  const test_procedure_practice_stroop = {
+  const test_practica_stroop = {
     timeline: [fixation, prueba_stroop, feedback],
     timeline_variables: trialBaseStroopPractica,
     randomize_order: true,
   };
- const instruccion_practica_stroop = {
+  const instruccion_practica_stroop = {
     type: jsPsychHtmlKeyboardResponse,
     key_property_for_validation: "code",
     stimulus: `
-<div style="font-size: 20px; line-height: 1.5; text-align: left;">
-  Ahora en lugar de círculos verás palabras de colores a las que también deberás responder con las teclas.<br><br>
-  <strong>¡MUY IMPORTANTE!</strong> No debes leer la palabra. Debes fijarte únicamente en el color con el que está pintada. Enfócate solo en el color de la tinta.<br><br>
-  Por ejemplo, puede que leas la palabra '<em>azul</em>', pero esté pintada de color <strong>rojo</strong>.<br><br>
-  Debes presionar la tecla correspondiente al color de la tinta.<br><br>
-  <u>Recuerda:</u><br><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;Amarillo → Tecla 1<br><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;Azul → Tecla 2<br><br>
-  &nbsp;&nbsp;&nbsp;&nbsp;Rojo → Tecla 3<br><br>
-  Vas a comenzar con unos pocos ensayos de práctica para que te familiarices con la tarea.
-</div>
+    <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
+      Ahora en lugar de círculos verás palabras de colores a las que también deberás responder con las teclas.<br><br>
+      <strong>¡MUY IMPORTANTE!</strong> No debes leer la palabra. Debes fijarte únicamente en el color con el que está pintada. Enfócate solo en el color de la tinta.<br><br>
+      Por ejemplo, puede que leas la palabra '<em>azul</em>', pero esté pintada de color <strong>rojo</strong>.<br><br>
+      Debes presionar la tecla correspondiente al color de la tinta.<br><br>
+      <u>Recuerda:</u><br><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Amarillo → Tecla 1<br><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Azul → Tecla 2<br><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Rojo → Tecla 3<br><br>
+      Vas a comenzar con unos pocos ensayos de práctica para que te familiarices con la tarea.
+    </div>
 
     <br><br>
     <p><strong>Presiona espacio para continuar</strong></p>
 
     `,
     choices: ["Space"],
-    post_trial_gap: 500,
   };
-   const instruccion_stroop = {
+  const instruccion_stroop = {
     type: jsPsychHtmlKeyboardResponse,
     key_property_for_validation: "code",
     stimulus: `
-        <div style="font-size: 20px; line-height: 1.5; text-align: left;">
+    <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
           Ahora comenzarás la tarea de verdad.<br><br>
           Recuerda, no se te indicará si cometes un error, así que debes estar muy atento.<br><br>
           Debes fijarte únicamente en el color con el que está pintada. Enfócate solo en el color de la tinta.<br><br>
@@ -883,34 +880,212 @@ function startJsPsychExperiment(participantData, showSection) {
 
     `,
     choices: ["Space"],
-    post_trial_gap: 500,
   };
+  ///////////////////////////////
+  ////////////////GONOGO
+  //////////////////////////////
+
+  const instruccion_practica_gonogo = {
+    type: jsPsychHtmlKeyboardResponse,
+    key_property_for_validation: "code",
+    stimulus: `
+    <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
+      <p>En esta tarea verás una serie de letras que aparecerán en la pantalla: la letra <strong>'P'</strong> y la letra <strong>'R'</strong>.</p>
+  
+      <p>Cuando veas una <strong>'P'</strong>, debes responder presionando la barra espaciadora.</p>
+      
+      <p>Cuando veas una <strong>'R'</strong>, <u>no debes hacer nada</u>. ¡No respondas!</p>
+      
+      <p>La mayoría de las letras que aparecerán serán <strong>'P'</strong>, así que mantente atento.</p>
+      
+      <p>Vas a comenzar con unos pocos ensayos de práctica para que te familiarices con la tarea.</p>
+    </div>
+
+    <br><br>
+    <p><strong>Presiona espacio para continuar</strong></p>
+
+    `,
+    choices: ["Space"],
+  };
+
+  const trialbasegonogo = calcular_trialbase_gonogo(jsPsych, 60);
+  const trialpracticegonogo = calcular_trialbase_gonogo(jsPsych, 20);
+  console.log(trialpracticegonogo);
+
+  const prueba_practica_gonogo = {
+    type: jsPsychHtmlKeyboardResponse,
+    key_property_for_validation: "code",
+    stimulus: function () {
+      const pos = jsPsych.evaluateTimelineVariable("gPos");
+      const letra = jsPsych.evaluateTimelineVariable("letter");
+
+      const cells = Array(4).fill(
+        `<div class="cell"><div class="star">✸</div></div>`
+      );
+
+      cells[
+        pos
+      ] = `<div class="cell"><div id="star" class="star" style="display: none;">✸</div><div id="error" class="error" style="display: none;">X</div><div id="letter" class="letter">${letra}</div></div>`;
+      console.log(pos ,cells);
+      return `<div class="grid">${cells.join("")}</div>
+      `;
+    },
+    choices: ["Space"],
+    on_load: function () {
+      setTimeout(() => {
+        const el = document.getElementById("letter");
+        if (el) el.style.display = "none";
+        const al = document.getElementById("star");
+        if (al) al.style.display = "block";
+      }, gVisibleStimul);
+    },
+    data: {
+      task: "response", // Deja esto como 'response' para que se capture data.response, data.rt, etc.
+      go_nogo_type: function () {
+        const letra = jsPsych.evaluateTimelineVariable("letter");
+        return letra === "P" ? "go" : "nogo";
+      },
+      stim_letter: function () {
+        return jsPsych.evaluateTimelineVariable("letter");
+      },
+      letter_pos: function () {
+        return jsPsych.evaluateTimelineVariable("gPos"); 
+      },
+    },
+    trial_duration: gTimeResponse,
+    save_trial_parameters: {
+      stimulus: false,
+    },
+    on_finish: function (data) {
+      const current_letter = data.stim_letter;
+      const participant_response = data.response; // Contiene 'Space' o null
+      let correct = false;
+      if (current_letter === "P") {
+        if (participant_response === "Space") {
+          correct = true;
+        } else {
+          correct = false;
+        }
+      } else if (current_letter === "R") {
+        if (participant_response === null) {
+          correct = true;
+        } else {
+          correct = false;
+        }
+      }
+
+      data.correct = correct;
+    },
+  };
+
+  const instruccion_test_gonogo = {
+      type: jsPsychHtmlKeyboardResponse,
+      key_property_for_validation: "code",
+      stimulus: `
+      <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
+        <p>Ahora comenzarás la tarea de verdad.</p>
+        <p>Recuerda, no se te indicará si cometes un error, así que debes estar muy atento.</p>
+        <p>Responde presionando la barra espaciadora cuando veas una <strong>'P'</strong> y no respondas cuando veas una <strong>'R'</strong>.</p>
+        <p>La mayoría de las letras serán 'P', pero mantente concentrado durante toda la tarea.</p>
+      </div>
+
+      <br><br>
+      <p><strong>Presiona espacio para continuar</strong></p>
+
+      `,
+      choices: ["Space"],
+    };
+  // Timeline para mostrar el feedback visual del error: grid con estrella tachada
+  const gonogo_error_feedback = {
+    type: jsPsychHtmlKeyboardResponse,
+    stimulus: function () {
+      const last_trial_data = jsPsych.data.get().last(1).values()[0];
+      const pos = last_trial_data.letter_pos;
+
+
+      // Creamos la grilla
+      const cells = Array(4).fill(
+        `<div class="cell"><div class="star">✸</div></div>`
+      );
+
+      // En la posición con error, mostramos la estrella con la X encima
+      cells[pos] = `
+        <div class="cell">
+          <div id="star" class="star">✸</div>
+          <div id="error" class="error">☓</div>
+        </div>`;
+      console.log("Error cometido ", pos, cells);
+      return `<div class="grid">${cells.join("")}</div>`;
+    },
+    choices: "NO_KEYS",
+    trial_duration: gTimeFeedbaak + 500,
+    on_load: function () {
+      setTimeout(() => {
+        const el = document.getElementById("error");
+        if (el) el.style.display = "none";
+        const al = document.getElementById("star");
+        if (al) al.style.display = "block";
+      }, gTimeFeedbaak + 300);
+    },
+  };
+
+  // Nodo condicional que solo muestra el feedback si hubo error
+  const gonogo_feedback_node = {
+    timeline: [gonogo_error_feedback],
+    conditional_function: function () {
+      const last_trial = jsPsych.data.get().last(1).values()[0];
+      console.log(last_trial.correct);
+      return !last_trial.correct; // Solo mostrar si no fue correcto
+    },
+  };
+
+  const test_procedure_practice_gonogo = {
+    timeline: [prueba_practica_gonogo, gonogo_feedback_node],
+    timeline_variables: trialpracticegonogo,
+    randomize_order: true,
+  };
+
+  const test_procedure_test_gonogo = {
+    timeline: [prueba_practica_gonogo, gonogo_feedback_node],
+    timeline_variables: trialbasegonogo,
+    randomize_order: true,
+  };
+
   timeline.push(
     fullscreen_trial,
     instruccion_practica_simon,
     countdown_trial,
-    //test_procedure_practice_simon,
-    //instruccion_real_simon,
-    //countdown_trial,
-    //test_procedure_simon,
-    //break_45_seconds_trial,
-    //countdown_trial,
-    //test_procedure_simon,
-    //break_60_seconds_trial,
-    //loop_practica_colores,
-    //countdown_trial,
-    //loop_automatizacion,
-    //break_after_automation_trial,
+    test_procedure_practica_simon,
+    instruccion_test_simon,
+    countdown_trial,
+    test_procedure_simon,
+    break_45_seconds_trial,
+    countdown_trial,
+    test_procedure_simon,
+    break_60_seconds_trial,
+    practica_colores,
+    countdown_trial,
+    fase_automatizacion,
+    break_after_automation_trial,
     instruccion_practica_stroop,
-    //countdown_trial,
-    //test_procedure_practice_stroop,
+    countdown_trial,
+    test_practica_stroop,
     instruccion_stroop,
-    //countdown_trial,
-    //test_procedure_stroop,
-    //break_45_seconds_trial,
-    //countdown_trial,
-    //test_procedure_stroop,
-    //break_60_seconds_trial,
+    countdown_trial,
+    test_procedure_stroop,
+    break_45_seconds_trial,
+    countdown_trial,
+    test_procedure_stroop,
+    break_60_seconds_trial,
+    instruccion_practica_gonogo,
+    countdown_trial,
+    test_procedure_practice_gonogo,
+    instruccion_test_gonogo,
+    countdown_trial,
+    test_procedure_test_gonogo,
+    countdown_trial,
+    break_45_seconds_trial,
+    test_procedure_test_gonogo,
     fullscreen_trial_exit,
   );
 
@@ -1056,4 +1231,53 @@ function getSimonTrialInfo(stimCode, xPos) {
     congruence: congruence,
     correctResponse: correctResponsesSimon[stimCode],
   };
+}
+function calcular_trialbase_gonogo(jsPsych, totalTrials) {
+  // Calcular número de P (Go) y R (No-Go) con proporción 80/20
+  let numP = Math.round(totalTrials * 0.70);
+  let numR = totalTrials - numP;
+
+  // Asegurarse de que la suma dé exactamente totalTrials
+  if (numP + numR !== totalTrials) {
+    // Ajustar según el caso (prioriza mantener el total correcto)
+    numP = totalTrials - numR;
+  }
+
+  // Crear el diseño base
+  const createDesign = () => {
+    const design = [];
+
+    for (let i = 0; i < numP; i++) {
+      design.push({ letter: "P", gPos: Math.floor(Math.random() * 4), test_part: "gonogo",});
+    }
+    for (let i = 0; i < numR; i++) {
+      design.push({ letter: "R", gPos: Math.floor(Math.random() * 4), test_part: "gonogo", });
+    }
+
+    return design;
+  };
+
+  // Mezclar el diseño
+  const shuffleDesign = (design) => {
+    return jsPsych.randomization.shuffle([...design]);
+  };
+
+  // Crear el diseño final
+  const fullDesign = shuffleDesign(createDesign());
+
+  // Contar cuántos "P" y "R" hay (verificación)
+  const count = fullDesign.reduce(
+    (acc, trial) => {
+      if (trial.letter === "P") acc.P++;
+      if (trial.letter === "R") acc.R++;
+      return acc;
+    },
+    { P: 0, R: 0 }
+  );
+
+  console.log("Total de ensayos:", totalTrials);
+  console.log("Total de P (Go):", count.P);
+  console.log("Total de R (No-Go):", count.R);
+
+  return fullDesign;
 }

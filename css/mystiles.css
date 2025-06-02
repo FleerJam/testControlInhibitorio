@@ -56,10 +56,10 @@ hr {
 }
 
 .stim-container {
-  position: relative; 
-  height: 100vh; 
-  display: flex; 
-  justify-content: center; 
+  position: relative;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
   align-items: center;
 }
 
@@ -85,7 +85,6 @@ hr {
   background-color: rgb(220, 20, 60);
 }
 
-
 #circle-stroop {
   position: absolute; /* O puedes usar flexbox/grid para centrar */
 }
@@ -110,7 +109,6 @@ hr {
   background-color: rgb(220, 20, 60);
 }
 
-
 .response-option-left,
 .response-option-right {
   font-size: 24px;
@@ -125,8 +123,6 @@ hr {
 .response-option-right {
   color: rgb(220, 20, 60);
 }
-
-
 
 .response-options-container {
   position: absolute;
@@ -158,6 +154,48 @@ hr {
   font-weight: bold;
 }
 
+.grid {
+  display: grid;
+  grid-template-columns: 250px 250px;
+  grid-template-rows: 250px 250px;
+  gap: 0;
+  border: 2px solid #666666;
+} 
+
+.cell {
+  position: relative;
+  border: 1px solid #666666;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+}
+/* Estilos para la estrella y la X */
+.star, .error {
+  position: absolute; /* Posicionamiento absoluto para superponer */
+  top: 50%; /* Centrar verticalmente */
+  left: 50%; /* Centrar horizontalmente */
+  transform: translate(-50%, -50%); /* Ajuste para centrado exacto */
+  font-size: 3em; /* Tamaño de la estrella/X */
+}
+
+.star {
+  color: rgb(65, 105, 225);
+  font-size: 7.5rem;
+  z-index: 1;
+}
+
+.letter {
+  color: #2e2e2e;
+  font-size: 3.5rem;
+}
+
+.error {
+  color: #2e2e2e;
+  font-weight: bold;
+  font-size: 4rem;
+  z-index: 2;
+}
 
 #jspsych-display {
   width: 100vw; /* Asegura que ocupe todo el ancho del viewport */
@@ -166,7 +204,7 @@ hr {
   justify-content: center; /* Centra horizontalmente el contenido */
   align-items: center; /* Centra verticalmente el contenido */
   overflow: hidden; /* Evita barras de desplazamiento si el contenido es un poco más grande */
-  background-color: #f0f0f0; /* Un color de fondo suave para todo el experimento */
+  background-color: #cccccc; /* Un color de fondo suave para todo el experimento */
 }
 
 /* Estilos generales para los textos de instrucciones y descansos */
@@ -175,7 +213,7 @@ hr {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  text-align: center;
+  text-align: left;
   padding: 20px;
   box-sizing: border-box; /* Incluye padding en el ancho/alto */
   width: 100%; /* Permite que el contenido se ajuste */
@@ -183,19 +221,19 @@ hr {
 }
 /* Esto asegura que el mensaje de fin se vea bien */
 #completion-message {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    font-size: 20px;
-    color: #333;
-    padding: 20px;
-    box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  font-size: 20px;
+  color: #333;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 #completion-message h2 {
-    font-size: 30px;
-    color: #007bff;
-    margin-bottom: 20px;
+  font-size: 30px;
+  color: #007bff;
+  margin-bottom: 20px;
 }
