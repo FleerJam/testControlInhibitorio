@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 participantData.groupId = groupId; // Ensure groupId is present
 
                 // Save demographics and initial stage in Firebase
-                await saveToFirebaseRobustly(`participants/${participantId}`, {
+                await saveToFirebaseRobustly(`participants/${groupId}/${participantId}`, {
                     participantId: participantId, // For rules
                     demographics: currentDemographicsData,
                     current_stage: 'demographics_completed',

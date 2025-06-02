@@ -19,17 +19,14 @@ function startJsPsychExperiment(
     on_finish: async function (data) {
       showSection(document.getElementById("completion-message"));
 
-      // Obtiene todos los datos registrados por jsPsych
-      const allData = jsPsych.data.get();
-
       // Guardar el estado final de completado en Firebase
       try {
         await saveToFirebaseRobustly(
-          `participants/${participantInfo.participantId}/experiment_results/completion_timestamp`,
+          `participants/${participantInfo.groupId}/${participantInfo.participantId}/experiment_results/completion_timestamp`,
           new Date().toISOString()
         );
         await saveToFirebaseRobustly(
-          `participants/${participantInfo.participantId}/current_stage`,
+          `participants/${participantInfo.groupId}/${participantInfo.participantId}/current_stage`,
           "experiment_completed"
         );
         console.log("Estado de finalización del experimento guardado.");
@@ -491,11 +488,11 @@ function startJsPsychExperiment(
 
       try {
         await saveToFirebaseRobustly(
-          `participants/${participantInfo.participantId}/experiment_results/simon_results`,
+          `participants/${participantInfo.groupId}/${participantInfo.participantId}/experiment_results/simon_results`,
           dataToSave
         );
         await saveToFirebaseRobustly(
-          `participants/${participantInfo.participantId}/current_stage`,
+          `participants/${participantInfo.groupId}/${participantInfo.participantId}/current_stage`,
           "simon_completed"
         );
         console.log("Datos de Simon guardados y stage actualizado.");
@@ -813,11 +810,11 @@ function startJsPsychExperiment(
 
       try {
         await saveToFirebaseRobustly(
-          `participants/${participantInfo.participantId}/experiment_results/stroop_results`,
+          `participants/${participantInfo.groupId}/${participantInfo.participantId}/experiment_results/stroop_results`,
           dataToSave
         );
         await saveToFirebaseRobustly(
-          `participants/${participantInfo.participantId}/current_stage`,
+          `participants/${participantInfo.groupId}/${participantInfo.participantId}/current_stage`,
           "stroop_completed"
         );
         console.log("Datos de Stroop guardados y stage actualizado.");
@@ -1082,11 +1079,11 @@ function startJsPsychExperiment(
 
       try {
         await saveToFirebaseRobustly(
-          `participants/${participantInfo.participantId}/experiment_results/gonogo_results`,
+          `participants/${participantInfo.groupId}/${participantInfo.participantId}/experiment_results/gonogo_results`,
           dataToSave
         );
         await saveToFirebaseRobustly(
-          `participants/${participantInfo.participantId}/current_stage`,
+          `participants/${participantInfo.groupId}/${participantInfo.participantId}/current_stage`,
           "gonogo_completed"
         );
         console.log("Datos de Go/NoGo guardados y stage actualizado.");
