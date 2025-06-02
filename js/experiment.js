@@ -314,7 +314,7 @@ function startJsPsychExperiment(
       }, 1000);
     },
   };
-  var preload = {
+  let preload = {
     type: jsPsychPreload,
     auto_preload: true
   };
@@ -1194,6 +1194,7 @@ function startJsPsychExperiment(
   ) {
     // Si demográficos acabados o es un inicio fresco
     timeline.push(
+      preload,
       fullscreen_trial,
       simon_block_completo,
       stroop_block_completo,
@@ -1202,6 +1203,7 @@ function startJsPsychExperiment(
     );
   } else if (initialProgressStage === "simon_completed") {
     timeline.push(
+      preload,
       fullscreen_trial,
       stroop_block_completo,
       gonogo_block_completo,
@@ -1209,6 +1211,7 @@ function startJsPsychExperiment(
     );
   } else if (initialProgressStage === "stroop_completed") {
     timeline.push(
+      preload,
       fullscreen_trial,
       gonogo_block_completo,
       fullscreen_trial_exit
