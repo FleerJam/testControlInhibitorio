@@ -681,7 +681,7 @@ function startJsPsychExperiment(
       ${footer_stroop}
       `;
     },
-    choices: ["Digit1", "Digit2", "Digit3", "Space"],
+    choices: ["Digit1", "Digit2", "Digit3"],
     on_load: function () {
       setTimeout(() => {
         const el = document.getElementById("word-stroop");

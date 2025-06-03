@@ -1,0 +1,18 @@
+span {
+  font-size: 15px;
+  color: red;
+  margin-top: 10px;
+}
+#admin-section {
+  display: none;
+} /* Oculto por defecto */
+#error-message {
+  color: red;
+  display: none;
+}
+pre {
+  background-color: #f4f4f4;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+}

@@ -1,4 +1,5 @@
 jspych/
 js/test.js
-js/auth.js
+data/
 administrador_login.html
+js/auth.js
