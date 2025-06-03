@@ -80,7 +80,13 @@ async function saveToFirebaseRobustly(path, data, retries = 3, delay = 1000) {
 
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const allowedGroups = ["MusicaClasica", "Control", "RuidoBlanco", "RuidoDisruptivo"]; // Agrega aquí los grupos válidos
+  const allowedGroups = [
+    "MusicaClasica", 
+    "Control", 
+    "RuidoBlanco", 
+    "RuidoDisruptivo", 
+    "Piloto",
+  ]; // Agrega aquí los grupos válidos
   const validCode = "b!%21%26HEt9i3%2359dvEJJ%5E3P"; // Asegúrate de que este sea el código URL-encoded
   const experimentContent = document.getElementById("container");
   const deniedMessage = document.getElementById("access-denied-message");
