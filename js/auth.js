@@ -68,7 +68,9 @@ async function cargarDatos() {
     if (loginSection) loginSection.style.display = "none";
     if (adminSection) adminSection.style.display = "block";
 
-    const allParticipantsData = await loadAllExperimentDataRobustly('participants'); // Carga todos los datos bajo 'participants'
+    const allParticipantsData = await loadAllExperimentDataRobustly(
+      "participants"
+    ); // Carga todos los datos bajo 'participants'
     //const response = await fetch("./data/data.json");
     //const allParticipantsData = await response.json();
 
@@ -88,12 +90,24 @@ async function cargarDatos() {
           numGroups - 1
         }</p>`;
         for (const groupId in allParticipantsData) {
+          let totalHombres = 0;
+          let totalMujeres = 0;
           if (groupId === "Piloto") continue;
           const numParticipantsInGroup = Object.keys(
             allParticipantsData[groupId]
           ).length;
           const nombreBonito = separarPorMayusculas(groupId);
           dataDisplayDiv.innerHTML += `<p><b>Grupo ${nombreBonito}:</b> ${numParticipantsInGroup} participantes</p>`;
+          for (const participantId in allParticipantsData[groupId]) {
+            const participantData = allParticipantsData[groupId][participantId];
+            if (participantData.demographics.gender === "Hombre") {
+              totalHombres++;
+            } else if (participantData.demographics.gender === "Mujer") {
+              totalMujeres++;
+            }
+          }
+          dataDisplayDiv.innerHTML += `<p>Total de Hombres →  ${totalHombres}</p>`;
+          dataDisplayDiv.innerHTML += `<p>Total de Mujeres →  ${totalMujeres}</p>`;
         }
       }
     } else {
