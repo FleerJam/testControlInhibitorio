@@ -75,12 +75,6 @@ function startJsPsychExperiment(
     return jsPsych.randomization.sampleWithoutReplacement([0, 0], 1)[0];
   };*/
 
-  const footer_simon = `
-        <div class="response-instructions">
-          <span class="response-option-left">SHIFT Izquierda Azul</span>
-          <span class="response-option-right">SHIFT Derecha Rojo</span>
-        </div>
-  `;
   const footer_gonogo = `
         <div class="response-instruction-gonogo">
           <span class="response-option">Presiona la barra espaciadora cuando aparezca una P</span>
@@ -132,17 +126,10 @@ function startJsPsychExperiment(
           mensaje = INCORRECT_MESSAGE;
         }
       } else {
-        // If the previous trial was not a "response" trial (e.g., an instruction)
         mensaje = GENERIC_PREP_MESSAGE;
       }
 
-      // Assign the footer content based on the *current block's context*
-      if (current_test_part === "Stroop") {
-        footer_content = footer_stroop;
-      } else if (current_test_part === "Simon") {
-        footer_content = footer_simon;
-      }
-      // If current_test_part is neither, footer_content will remain an empty string
+      footer_content = footer_stroop;
 
       return mensaje + footer_content;
     },
@@ -159,11 +146,7 @@ function startJsPsychExperiment(
       const current_test_part = jsPsych.evaluateTimelineVariable("test_part");
       let footer_content = "";
 
-      if (current_test_part === "Stroop") {
-        footer_content = footer_stroop;
-      } else if (current_test_part === "Simon") {
-        footer_content = footer_simon;
-      }
+      footer_content = footer_stroop;
 
       return `
             <div id="fixation-plus" style="font-size: 80px;"><b>+</b></div>
@@ -315,204 +298,6 @@ function startJsPsychExperiment(
     },
   };
 
-
-  ///////////////////////////
-  ///////SIMON///////////////
-  ///////////////////////////
-
-
-  // Variables SIMON
-  let ronda_simon = 0;
-  const trialbaseSimonPractica = generarTrialBaseSimon(12, "Practica", jsPsych);
-  const trialBaseSimon = generarTrialBaseSimon(60, "Prueba", jsPsych);
-
-  console.log(trialbaseSimonPractica, trialBaseSimon);
-
-  const instruccion_practica_simon = {
-    type: jsPsychHtmlKeyboardResponse,
-    key_property_for_validation: "code",
-    stimulus: `
-    <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
-
-      Estás a punto de participar en un estudio donde se te mostrará uno de dos estímulos:
-      <strong>un círculo rojo o un círculo azul</strong>.<br><br>
-      El círculo aparecerá en distintas posiciones (a la izquierda o a la derecha de la pantalla),
-      pero <strong>su ubicación no es relevante</strong>.<br><br>
-      Tu tarea es responder lo más rápido posible al <strong>color del círculo</strong>:<br><br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&rarr; Si ves un círculo <strong>azul</strong>, presiona la tecla <strong>SHIFT izquierda</strong>.<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&rarr; Si ves un círculo <strong>rojo</strong>, presiona la tecla <strong>SHIFT derecha</strong>.
-    
-      <br><br>
-    <p>Vas a comenzar con unos ensayos de practica en los que se te dara una retroalimentacion, para que te familiarizes con la tarea</p>
-    </div>
-
-    <br>
-
-    <div style='display: flex; justify-content: space-around; margin-top: 20px; font-size: 20px;'>
-        <div style='text-align: center;'>
-          <div class="circle azul"></div>
-          <p class="response-option-left"><strong>SHIFT Izquierda</strong></p>
-        </div>
-        <div>
-          <div class="circle rojo"></div>
-          <p class="response-option-right"><strong>SHIFT Derecha</strong></p>
-        </div>
-    </div>
-
-    <br><br>
-    <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
-
-    `,
-    choices: ["Space"],
-  };
-
-  const instruccion_test_simon = {
-    type: jsPsychHtmlKeyboardResponse,
-    key_property_for_validation: "code",
-    stimulus: `
-    <div style='text-align: left; font-size: 20px; margin: auto; line-height: 1.6;'>
-      <strong>Ahora comenzarás la tarea de verdad.</strong>
-      <br><br>
-      Recuerda, no se te indicará si cometes un error, así que debes estar muy atento.
-      No olvides:<br><br>
-      &nbsp;&nbsp;&nbsp;&rarr; Si ves un círculo <strong>azul</strong>, presiona la tecla <strong>SHIFT izquierda</strong>.<br>
-      &nbsp;&nbsp;&nbsp;&rarr; Si ves un círculo <strong>rojo</strong>, presiona la tecla <strong>SHIFT derecha</strong>.
-    </div>
-    <br><br>
-    <p style='font-size: 20px;'><strong>Presiona espacio para continuar</strong></p>
-    `,
-    choices: ["Space"],
-  };
-
-  const prueba_simons = {
-    type: jsPsychHtmlKeyboardResponse,
-    key_property_for_validation: "code",
-    stimulus: function () {
-      const color_code = jsPsych.evaluateTimelineVariable("stim");
-      const xpos_actual = jsPsych.evaluateTimelineVariable("xpos");
-      const color_class = color_code == 1 ? "azul" : "rojo";
-
-      return `
-        <div class="stim-container">
-          <div id="circle-simon" class="circle ${color_class}"
-                style="left: calc(50% + ${xpos_actual}px);">
-          </div>
-        </div>
-
-        
-      ${footer_simon}
-      `;
-    },
-    choices: ["ShiftLeft", "ShiftRight"],
-    on_load: function () {
-      setTimeout(() => {
-        const el = document.getElementById("circle-simon");
-        if (el) el.style.display = "none";
-      }, gVisibleStimul);
-    },
-    data: {
-      task: "Response",
-      fase: function () {
-        return jsPsych.evaluateTimelineVariable("fase");
-      },
-      ronda: function () {
-        return ronda_simon;
-      },
-    },
-    trial_duration: gTimeResponse,
-    on_finish: function (data) {
-      data.test_part = jsPsych.evaluateTimelineVariable("test_part");
-      // Las condiciones ya están en data.trial_info si seguiste la sugerencia anterior
-      // Si no, puedes calcularlas aquí una vez:
-      const stim_val = jsPsych.evaluateTimelineVariable("stim");
-      const xpos_val = jsPsych.evaluateTimelineVariable("xpos");
-      const trialInfo = getSimonTrialInfo(stim_val, xpos_val);
-
-      // Asigna directamente las propiedades del objeto trialInfo a `data`
-      data.stim_color = trialInfo.color;
-      data.xpos_actual = xpos_val; // Mantener la variable original si es relevante
-      data.posicion = trialInfo.position;
-      data.congruencia = trialInfo.congruence;
-
-      data.correct_response = trialInfo.correctResponse; // Obtenido de la función auxiliar
-      data.correct = jsPsych.pluginAPI.compareKeys(
-        data.response,
-        data.correct_response
-      );
-    },
-    save_trial_parameters: {
-      stimulus: false,
-    },
-  };
-
-  const test_procedure_practica_simon = {
-    timeline: [fixation, prueba_simons, feedback],
-    timeline_variables: trialbaseSimonPractica,
-    randomize_order: true,
-  };
-
-  const first_round_simon = {
-    timeline: [fixation, prueba_simons],
-    timeline_variables: trialBaseSimon,
-    randomize_order: true,
-    on_start: function () {
-      ronda_simon = 1; // Asigna directamente 2 para la segunda ronda
-    },
-  };
-
-  const second_round_simon = {
-    timeline: [fixation, prueba_simons],
-    timeline_variables: trialBaseSimon,
-    randomize_order: true,
-    on_start: function () {
-      ronda_simon = 2; // Asigna directamente 2 para la segunda ronda
-    },
-  };
-
-  const guardar_simon = {
-    type: jsPsychCallFunction,
-    async: true, // Crucial: Tells jsPsych this function will be asynchronous
-    func: async function (done) {
-      // 'done' is the callback function provided by jsPsych
-      console.log("Iniciando guardado de datos de la tarea Simon...");
-
-      const simonData = jsPsych.data
-        .get()
-        .filter({ test_part: "Simon", task: "Response" })
-        .values();
-      const simonPractica = simonData.filter((d) => d.fase === "Practica");
-      const simonPrueba = simonData.filter((d) => d.fase === "Prueba");
-
-      const dataToSave = {
-        practica: simonPractica,
-        prueba: simonPrueba,
-        timestamp_completed: new Date().toISOString(),
-      };
-
-      try {
-        await saveToFirebaseRobustly(
-          `participants/${participantInfo.groupId}/${participantInfo.participantId}/experiment_results/simon_results`,
-          dataToSave
-        );
-        await saveToFirebaseRobustly(
-          `participants/${participantInfo.groupId}/${participantInfo.participantId}/current_stage`,
-          "simon_completed"
-        );
-        console.log("Datos de Simon guardados y stage actualizado.");
-        // Call 'done()' when the asynchronous operation is complete and successful
-        done();
-      } catch (error) {
-        console.error("Error al guardar datos de Simon:", error);
-        // You might want to pass an error message to done() or handle it differently
-        // if the save fails and you want to stop the experiment or retry.
-        done(new Error("Failed to save Simon data.")); // Pass an error to 'done'
-      }
-    },
-    // You can still add other properties if you want a visual indication during saving
-    // stimulus: '<p>Guardando datos de la tarea de Simon...</p>',
-    // choices: jsPsych.NO_KEYS,
-    // trial_duration: null // null or a very long duration if you rely purely on 'done()'
-  };
   ///////////////////////////
   ///////STROOP//////////////
   ///////////////////////////
@@ -824,7 +609,7 @@ function startJsPsychExperiment(
         done();
       } catch (error) {
         console.error("Error al guardar datos de Stroop:", error);
-        done(new Error("Failed to save Simon data.")); // Pass an error to 'done'
+        done(new Error("Failed to save Stroop data.")); // Pass an error to 'done'
       }
     },
   };
@@ -1093,28 +878,13 @@ function startJsPsychExperiment(
         done();
       } catch (error) {
         console.error("Error al guardar datos de Go/NoGo:", error);
-        done(new Error("Failed to save Simon data.")); // Pass an error to 'done'
+        done(new Error("Failed to save Gonogo data.")); // Pass an error to 'done'
       }
     },
   };
 
   const inter_round_break_and_countdown = {
     timeline: [break_45_seconds_trial, countdown_trial],
-  };
-
-  const simon_block_completo = {
-    timeline: [
-      instruccion_practica_simon,
-      countdown_trial,
-      test_procedure_practica_simon,
-      instruccion_test_simon,
-      countdown_trial,
-      first_round_simon,
-      inter_round_break_and_countdown,
-      second_round_simon,
-      guardar_simon,
-      break_60_seconds_trial,
-    ],
   };
 
   const stroop_block_completo = {
@@ -1154,15 +924,6 @@ function startJsPsychExperiment(
     initialProgressStage === "demographics_completed" ||
     initialProgressStage === "start"
   ) {
-    // Si demográficos acabados o es un inicio fresco
-    timeline.push(
-      fullscreen_trial,
-      simon_block_completo,
-      stroop_block_completo,
-      gonogo_block_completo,
-      fullscreen_trial_exit
-    );
-  } else if (initialProgressStage === "simon_completed") {
     timeline.push(
       fullscreen_trial,
       stroop_block_completo,
@@ -1177,61 +938,6 @@ function startJsPsychExperiment(
     );
   }
   jsPsych.run(timeline);
-}
-
-function generarTrialBaseSimon(numTrials, type, jsPsych) {
-  // 1. Selecciona el contenedor del experimento
-  let contenedorVideo = document.getElementById("jspsych-display");
-  let gVideoWidth = window.innerWidth;
-
-  if (contenedorVideo) {
-    gVideoWidth = contenedorVideo.offsetWidth;
-    console.log("El ancho de jspsych-display es:", gVideoWidth);
-  } else {
-    console.warn(
-      "No se encontró el contenedor jspsych-display. Se usará el valor por defecto:",
-      gVideoWidth
-    );
-  }
-
-  // 2. Definir posiciones relativas al ancho
-  let positions = [0, 0];
-  let percentages = [0.35, 0.7];
-  let num = 0;
-
-  while (positions.length < 6) {
-    let offset = (gVideoWidth / 2) * percentages[num];
-    positions.push(offset);
-    positions.push(-offset);
-    num += 1;
-  }
-
-  let stim = [1, 2]; // 1 = rojo, 2 = azul
-
-  // 3. Generar todas las combinaciones posibles de posiciones × estímulos
-  let allCombinations = [];
-  for (let i = 0; i < positions.length; i++) {
-    for (let j = 0; j < stim.length; j++) {
-      allCombinations.push({
-        xpos: positions[i],
-        stim: stim[j],
-        test_part: "Simon",
-        fase: type,
-      });
-    }
-  }
-
-  // 4. Repetir o recortar combinaciones para alcanzar numTrials
-  let trialbase = [];
-  while (trialbase.length < numTrials) {
-    trialbase = trialbase.concat(
-      jsPsych.randomization.shuffle(allCombinations)
-    );
-  }
-  trialbase = trialbase.slice(0, numTrials);
-
-  // 5. Devolver solo la lista de trials
-  return trialbase;
 }
 
 function generarTrialsStroopCompletos(numTrialsPorTipo, jsPsych, type) {
@@ -1397,42 +1103,4 @@ function getColorInfo(colorClass) {
     default:
       return { value: 0, name: "Sin Respuesta", key: "" };
   }
-}
-
-function getSimonTrialInfo(stimCode, xPos) {
-  const color = stimCode === 1 ? "Azul" : "Rojo";
-
-  let position;
-  if (xPos < 0) {
-    position = "Izquierda";
-  } else if (xPos > 0) {
-    position = "Derecha";
-  } else {
-    position = "Neutra";
-  }
-
-  let congruence;
-  if (
-    (position === "Izquierda" && stimCode === 1) || // Azul a la izquierda
-    (position === "Derecha" && stimCode === 2) // Rojo a la derecha
-  ) {
-    congruence = "Congruente";
-  } else if (position === "Neutra") {
-    congruence = "Neutra";
-  } else {
-    congruence = "Incongruente";
-  }
-
-  // Define las respuestas correctas para simplificar el on_finish
-  const correctResponsesSimon = {
-    1: "ShiftLeft", // Para azul (stimCode 1)
-    2: "ShiftRight", // Para rojo (stimCode 2)
-  };
-
-  return {
-    color: color,
-    position: position,
-    congruence: congruence,
-    correctResponse: correctResponsesSimon[stimCode],
-  };
 }
