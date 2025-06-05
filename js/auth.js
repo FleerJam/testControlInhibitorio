@@ -185,8 +185,8 @@ async function loadAndDisplayData(forceReload = false) {
   // Cargar desde fuente original (ya no se usa localStorage)
   let dataFromSource = null;
   try {
-    dataFromSource = await _loadDataFromSource("./data/data.json");
-    // dataFromSource = await _loadDataFromFirebaseSource("participants");
+    //dataFromSource = await _loadDataFromSource("./data/data.json");
+    dataFromSource = await _loadDataFromFirebaseSource("participants");
     if (dataFromSource) {
       allParticipantsDataCache = dataFromSource;
       console.log(
