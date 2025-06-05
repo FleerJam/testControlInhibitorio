@@ -210,6 +210,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 gender: document.querySelector('input[name="gender"]:checked')?.value || null,
                 age: document.getElementById("age").value || null,
                 semester: document.getElementById("semester").value || null,
+                carrera: document.getElementById("carrera").value || null,
                 drive: document.querySelector('input[name="drive"]:checked')?.value || null,
                 sleep: document.querySelector('input[name="sleep"]:checked')?.value || null,
                 musicStudy: document.querySelector('input[name="musicStudy"]:checked')?.value || null,
