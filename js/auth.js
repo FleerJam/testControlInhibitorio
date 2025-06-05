@@ -294,6 +294,7 @@ function getTableColumns() {
     "Genero que escucha",
     "Tiempo en pantallas",
     "Semestre",
+    "Carrera",
     "Horas de sueño",
     "Prueba",
     "# Ensayo",
@@ -401,9 +402,6 @@ function createCSVFromData(data) {
             case "Maneja":
               value = demographics.drive || "";
               break;
-            case "Juega Videojuegos":
-              value = demographics.videogames || "";
-              break;
             case "Concentracion al estudiar":
               value = demographics.concentration || "";
               break;
@@ -418,6 +416,9 @@ function createCSVFromData(data) {
               break;
             case "Semestre":
               value = demographics.semester || "";
+              break;
+            case "Carrera":
+              value = demographics.carrera || "";
               break;
             case "Horas de sueño":
               value = demographics.sleep || "";
@@ -580,6 +581,7 @@ function calculateDetailedStatistics(data) {
         "Genero que escucha": demographics.musicGenre || "",
         "Tiempo en pantallas": demographics.screenTime || "",
         Semestre: demographics.semester || "",
+        Carrera: demographics.carrera || "",
         "Horas de sueño": demographics.sleep || "",
       };
 
@@ -767,6 +769,7 @@ function calculateDetailedStatistics(data) {
     "Genero que escucha",
     "Tiempo en pantallas",
     "Semestre",
+    "Carrera",
     "Horas de sueño",
   ];
 
