@@ -365,10 +365,10 @@ function createCSVFromData(data) {
       const experimentResults = participantData.experiment_results || {};
 
       const trials = [
-        ...(experimentResults.stroop_results?.practica || []),
-        ...(experimentResults.stroop_results?.automatizacion || []),
+        //...(experimentResults.stroop_results?.practica || []),
+        //...(experimentResults.stroop_results?.automatizacion || []),
         ...(experimentResults.stroop_results?.prueba || []),
-        ...(experimentResults.gonogo_results?.practica || []),
+        //...(experimentResults.gonogo_results?.practica || []),
         ...(experimentResults.gonogo_results?.prueba || []),
       ];
 
@@ -445,20 +445,6 @@ function createCSVFromData(data) {
             case "Tipo":
               value = processedTrial.Condicion;
               break;
-            case "Respuesta":
-              if (trial.test_part === "Stroop")
-                value = mapColorResponse(trial.response);
-              else if (trial.test_part === "Go/NoGo")
-                value = trial.response === "Space" ? "Go" : "NoGo";
-              else value = "";
-              break;
-            case "Respuesta Correcta":
-              if (trial.test_part === "Stroop")
-                value = mapColorResponse(trial.correct_response);
-              else if (trial.test_part === "Go/NoGo")
-                value = trial.go_nogo_type || "";
-              else value = "";
-              break;
             case "Correcta":
               value = processedTrial.Correcta ? "Si" : "No";
               break;
@@ -467,7 +453,7 @@ function createCSVFromData(data) {
               break;
             case "RT":
               value =
-                processedTrial.RT !== null ? processedTrial.RT : "No Respondió";
+                processedTrial.RT !== null ? processedTrial.RT : "NA";
               break;
             default:
               value = trial[col] !== undefined ? trial[col] : "";
@@ -556,8 +542,7 @@ function calculateDetailedStatistics(data) {
   const participantsStats = [];
   const allPossibleStatColumns = new Set(); // Para recolectar todos los nombres de columnas dinámicos
 
-  // Define la precisión para calculateIQRBounds y el número de decimales para los resultados
-  const iqrPrecision = 1.75; // Puedes ajustar esto si lo necesitas
+  // Define el número de decimales para los resultados
   const numDecimales = 3;
 
   let participantCounter = 0;
@@ -621,18 +606,13 @@ function calculateDetailedStatistics(data) {
         const trialsInGroup = groupedStroopTrials[key];
         if (trialsInGroup.length === 0) continue;
 
-        // RTs para respuestas correctas Stroop
+        // RTs para respuestas correctas Stroop (sin filtrado de outliers)
         const rts = trialsInGroup
           .filter((t) => t.Correcta)
           .map((t) => t.RT)
           .filter((rt) => rt !== null && !isNaN(rt));
 
-        const iqrBounds = calculateIQRBounds(rts, iqrPrecision); // Pasa la precisión
-        const rts_normalized = rts.filter(
-          (rt) => rt >= iqrBounds.LimiteInferior && rt <= iqrBounds.LimiteSuperior
-        );
-
-        const averageRT = average(rts_normalized); // Calcula el promedio de RTs normalizados
+        const averageRT = average(rts); // Calcula el promedio de todos los RTs, sin normalizar
 
         const correctResponses = trialsInGroup.filter((t) => t.Correcta).length;
         const totalTrials = trialsInGroup.length;
@@ -644,8 +624,8 @@ function calculateDetailedStatistics(data) {
           totalTrials > 0 ? (intrusions / totalTrials) * 100 : 0;
 
         // Asignar estadísticas de Stroop al participantRow
-        participantRow[`${key}_NUM_OUTLIERS`] = rts.length - rts_normalized.length;
-        participantRow[`${key}_PROMEDIO_RT_OUT`] = isNaN(averageRT)
+        // Se elimina la columna _NUM_OUTLIERS
+        participantRow[`${key}_PROMEDIO_RT`] = isNaN(averageRT) // Se cambia el nombre de la columna para reflejar que no hay outliers
           ? "N/A"
           : averageRT.toFixed(numDecimales);
         participantRow[`${key}_NUM_CORRECTAS`] = correctResponses;
@@ -702,21 +682,15 @@ function calculateDetailedStatistics(data) {
             .map((t) => t.RT)
             .filter((rt) => rt !== null && !isNaN(rt));
 
-          const iqrBoundsGo = calculateIQRBounds(goCorrectRTs, iqrPrecision);
-          const goRTsNormalized = goCorrectRTs.filter(
-            (rt) => rt >= iqrBoundsGo.LimiteInferior && rt <= iqrBoundsGo.LimiteSuperior
-          );
-
-          const averageGoRT = average(goRTsNormalized);
+          const averageGoRT = average(goCorrectRTs); // Calcula el promedio de todos los RTs, sin normalizar
           const numCorrectGo = trialsInGroup.filter((t) => t.Correcta).length;
           const totalGoTrials = trialsInGroup.length;
           const numErrorOmission = totalGoTrials - numCorrectGo; // Correctas eran respuestas, incorrectas son omisiones en Go
           const percErrorOmission =
             totalGoTrials > 0 ? (numErrorOmission / totalGoTrials) * 100 : 0;
 
-          participantRow[`${key}_NUM_OUTLIERS`] =
-            goCorrectRTs.length - goRTsNormalized.length;
-          participantRow[`${key}_PROMEDIO_RT_OUT`] = isNaN(averageGoRT)
+          // Se elimina la columna _NUM_OUTLIERS
+          participantRow[`${key}_PROMEDIO_RT`] = isNaN(averageGoRT) // Se cambia el nombre de la columna para reflejar que no hay outliers
             ? "N/A"
             : averageGoRT.toFixed(numDecimales);
           participantRow[`${key}_NUM_CORRECTAS`] = numCorrectGo; // Esto es para GO (respuestas correctas)
@@ -777,8 +751,7 @@ function calculateDetailedStatistics(data) {
   const stroopConditionOrder = ["CONGRUENTE", "NEUTRA", "INCONGRUENTE"];
   const stroopFaseOrder = ["FT", "FA", "FP", "FNA"]; // Orden de fases Stroop
   const stroopStatSuffixOrder = [
-    "_NUM_OUTLIERS",
-    "_PROMEDIO_RT_OUT",
+    "_PROMEDIO_RT", // Se ha cambiado de _PROMEDIO_RT_OUT
     "_NUM_CORRECTAS",
     "_PORCENTAJE_CORRECTAS",
     "_NUM_INTRUSIONES",
@@ -789,8 +762,7 @@ function calculateDetailedStatistics(data) {
   const gngConditionOrder = ["GO", "NOGO"];
   const gngFaseOrder = ["FT", "FP", "FNA"]; // Orden de fases Go/NoGo
   const gngStatSuffixOrder = [
-    "_NUM_OUTLIERS",
-    "_PROMEDIO_RT_OUT",
+    "_PROMEDIO_RT", // Se ha cambiado de _PROMEDIO_RT_OUT
     "_NUM_CORRECTAS", // Para GO (se usará _NUM_CORRECTAS)
     "_NUM_ERRORES_OMISION",
     "_PORCENTAJE_ERRORES_OMISION",
