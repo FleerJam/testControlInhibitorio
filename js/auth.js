@@ -300,10 +300,7 @@ function getTableColumns() {
     "# Ensayo",
     "Fase",
     "Ronda",
-    "Estimulo",
     "Tipo",
-    "Respuesta",
-    "Respuesta Correcta",
     "Correcta",
     "Intrusion",
     "RT",
@@ -386,6 +383,8 @@ function createCSVFromData(data) {
 
         const rowValues = columns.map((col) => {
           let value;
+          let valueOfMusicStudy;
+          let valueOfConcentracion;
           switch (col) {
             case "Id":
               value = participantCounter;
@@ -403,10 +402,39 @@ function createCSVFromData(data) {
               value = demographics.drive || "";
               break;
             case "Concentracion al estudiar":
-              value = demographics.concentration || "";
+              valueOfConcentracion = demographics.concentration || "";
+              if (
+                valueOfConcentracion === "Nada" ||
+                valueOfConcentracion === "Poco"
+              ) {
+                value = "Sin Concentracion";
+              } else if (valueOfConcentracion === "Moderadamente") {
+                value = "Concentracion Moderada";
+              } else if (
+                valueOfConcentracion === "Mucho" ||
+                valueOfConcentracion === "Totalmente"
+              ) {
+                value = "Concentracion Optima";
+              } else {
+                value = "Valor No Definido";
+              }
               break;
             case "Escucha musica al estudiar":
-              value = demographics.musicStudy || "";
+              valueOfMusicStudy = demographics.musicStudy || "";
+
+              if (
+                valueOfMusicStudy === "Nunca" ||
+                valueOfMusicStudy === "A veces"
+              ) {
+                value = "No"; // O "Poca Frecuencia"
+              } else if (
+                valueOfMusicStudy === "Frecuentemente" ||
+                valueOfMusicStudy === "Siempre"
+              ) {
+                value = "Si"; // O "Mucha Frecuencia"
+              } else {
+                value = "Valor No Definido"; // Para manejar datos inesperados
+              }
               break;
             case "Genero que escucha":
               value = demographics.musicGenre || "";
@@ -435,25 +463,17 @@ function createCSVFromData(data) {
             case "Ronda":
               value = processedTrial.Ronda;
               break;
-            case "Estimulo":
-              if (trial.test_part === "Stroop")
-                value = `${trial.stimWord}/${trial.stimColor}`;
-              else if (trial.test_part === "Go/NoGo")
-                value = trial.stim_letter || "";
-              else value = "";
-              break;
             case "Tipo":
               value = processedTrial.Condicion;
               break;
             case "Correcta":
-              value = processedTrial.Correcta ? "Si" : "No";
+              value = processedTrial.Correcta ? 1 : 0;
               break;
             case "Intrusion":
-              value = processedTrial.Intrusion ? "Si" : "No Aplica";
+              value = processedTrial.Intrusion ? 1 : 0;
               break;
             case "RT":
-              value =
-                processedTrial.RT !== null ? processedTrial.RT : "NA";
+              value = processedTrial.RT !== null ? processedTrial.RT : "N/A";
               break;
             default:
               value = trial[col] !== undefined ? trial[col] : "";
@@ -561,8 +581,47 @@ function calculateDetailedStatistics(data) {
         Sexo: demographics.gender || "",
         Edad: demographics.age || "",
         Maneja: demographics.drive || "",
-        "Concentracion al estudiar": demographics.concentration || "",
-        "Escucha musica al estudiar": demographics.musicStudy || "",
+        "Concentracion al estudiar": (() => {
+          // <--- Aquí se define y se ejecuta inmediatamente
+          let valueOfConcentracion = demographics.concentration || "";
+          let value = ""; // Inicializamos la variable 'value'
+
+          if (
+            valueOfConcentracion === "Nada" ||
+            valueOfConcentracion === "Poco"
+          ) {
+            value = "Sin Concentracion";
+          } else if (valueOfConcentracion === "Moderadamente") {
+            value = "Concentracion Moderada";
+          } else if (
+            valueOfConcentracion === "Mucho" ||
+            valueOfConcentracion === "Totalmente"
+          ) {
+            value = "Concentracion Optima";
+          } else {
+            value = "Valor No Definido";
+          }
+          return value; // <--- El resultado de esta función (el valor de 'value') se asigna a "Concentracion al estudiar"
+        })(),
+        "Escucha musica al estudiar": (() => {
+          let valueOfMusicStudy = demographics.musicStudy || "";
+          let value = ""; // Inicializamos la variable 'value'
+
+          if (
+            valueOfMusicStudy === "Nunca" ||
+            valueOfMusicStudy === "A veces"
+          ) {
+            value = "No"; // O "Poca Frecuencia"
+          } else if (
+            valueOfMusicStudy === "Frecuentemente" ||
+            valueOfMusicStudy === "Siempre"
+          ) {
+            value = "Si"; // O "Mucha Frecuencia"
+          } else {
+            value = "Valor No Definido"; // Para manejar datos inesperados
+          }
+          return value;
+        })(), // Asegúrate de retornar el valor
         "Genero que escucha": demographics.musicGenre || "",
         "Tiempo en pantallas": demographics.screenTime || "",
         Semestre: demographics.semester || "",
