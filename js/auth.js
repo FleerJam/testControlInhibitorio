@@ -300,7 +300,7 @@ function getTableColumns() {
     "# Ensayo",
     "Fase",
     "Ronda",
-    "Tipo",
+    "Condicion",
     "Correcta",
     "Intrusion",
     "RT",
@@ -463,7 +463,7 @@ function createCSVFromData(data) {
             case "Ronda":
               value = processedTrial.Ronda;
               break;
-            case "Tipo":
+            case "Condicion":
               value = processedTrial.Condicion;
               break;
             case "Correcta":
@@ -473,7 +473,7 @@ function createCSVFromData(data) {
               value = processedTrial.Intrusion ? 1 : 0;
               break;
             case "RT":
-              value = processedTrial.RT !== null ? processedTrial.RT : "N/A";
+              value = processedTrial.RT !== null ? processedTrial.RT : "";
               break;
             default:
               value = trial[col] !== undefined ? trial[col] : "";
